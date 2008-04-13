@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * 
@@ -13,7 +14,7 @@ import java.io.IOException;
 public class Database {
 	
 	// Directory containing the Hyperdoc pages.
-	static public String dbdir = "jyperdoc/pages/";
+	static public String dbdir = "/jyperdoc/pages/";
 	
 	// Index file of the Hyperdoc pages.
 	static public String pagesindex = "ht.db";	
@@ -31,7 +32,8 @@ public class Database {
 	    BufferedReader input = null;
 		try {
 			
-		    input = new BufferedReader( new FileReader(Database.dbdir + filename));
+			URL indexurl = Object.class.getResource(Database.dbdir + filename);
+		    input = new BufferedReader( new FileReader(indexurl.getFile()));
 		    String line = null; //not declared within while loop
 
 		    while (( line = input.readLine()) != null){
