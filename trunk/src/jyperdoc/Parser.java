@@ -102,7 +102,7 @@ public class Parser {
 		
 		String html = createHTML(cleanedtokens);
 		title = createHTML(processedtokens2);
-		System.out.println("html: " + html);
+		//System.out.println("html: " + html);
 		
 		//html = createHTMLLinks(html);
 		//System.out.println("htmllinks: " + html);
