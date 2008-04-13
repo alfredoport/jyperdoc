@@ -587,7 +587,7 @@ public class Parser {
 			if (position < tokens.size())
 				tokens.setElementAt("</span>", position + 1); 
 			
-			return "<span>";	
+			return "<span style='color:#FFFFFF;'>";	
 		}
 		else if (element.matches("\\\\autobutt\\{")) {
 			
