@@ -102,7 +102,7 @@ public class Parser {
 		
 		String html = createHTML(cleanedtokens);
 		title = createHTML(processedtokens2);
-		//System.out.println("html: " + html);
+		System.out.println("html: " + html);
 		
 		//html = createHTMLLinks(html);
 		//System.out.println("htmllinks: " + html);
@@ -371,7 +371,7 @@ public class Parser {
 				tokens.setElementAt("</a>", position + 1); 
 				//tokens.setElementAt("fclosebracket", position);
 			}
-			return "<br/>" + DOTIMAGE + "<a " + Parser.ASTYLE + " href='mdl://";
+			return "<br/>" + DOTIMAGE + "<a " + Parser.ASTYLE + " href='mwl://";
 			
 		}
 		else if (element.matches("\\\\downlink\\{")) {
