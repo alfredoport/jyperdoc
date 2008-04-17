@@ -32,27 +32,21 @@ public class Database {
 	static public String getFileContent(String filename) {
 		
 		StringBuffer contents = new StringBuffer();
-		StringBuffer contents2 = new StringBuffer();
 
 		// Declared here only to make visible to finally clause
 	    BufferedReader input = null;
 		try {
-			//URL indexurl = Object.class.getResourceAsStream(Database.dbdir + filename);
+			
 	         input = new BufferedReader(new InputStreamReader(
 	        		 Object.class.getResourceAsStream(Database.dbdir + filename)));
 			 String line = null; //not declared within while loop
 	         if (input != null) {
-
-
 
 	        	 while ((line = input.readLine()) != null) {
 	   		      contents.append(line);
 			      contents.append(System.getProperty("line.separator"));
 
 	        	 }
-
-	        	 input.close();
-
 	         } 
 		 }
 		 catch (FileNotFoundException ex) {

@@ -27,7 +27,7 @@ public class Parser {
 	static private String LANGUAGE = "AXIOM";
 	static private String HYPERNAME = "JyperDoc";
 	static public String IMAGEDIR = "/jyperdoc/bitmaps/";
-	static private String LOGO = "bitmaps/axiom1.bitmap";
+	static private String LOGO = "/bitmaps/axiom1.bitmap";
 	static private String ASTYLE = "style='color: black; font-weight: bold; text-decoration: none'";
 	static private Pattern BACKWORDB = Pattern.compile("^\\\\([a-zA-Z]+\\s*\\{)");
 	static private Pattern BACKSYMBOL = Pattern.compile("^\\{\\\\([a-zA-Z]+\\s+)");
@@ -61,7 +61,7 @@ public class Parser {
 			currentdir = currentdir.replaceAll("\\\\", "/");
 		}
 		
-		DOTIMAGE = new String("<img src='file://" + currentdir.trim() + Parser.IMAGEDIR + "menudot.bitmap" + "'/>");
+		DOTIMAGE = new String("<img src='file:" + currentdir.trim()  + Parser.IMAGEDIR + "menudot.bitmap" + "'/>");
 
 	}
 	
