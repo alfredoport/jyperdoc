@@ -5,6 +5,7 @@ AxiomServer: public == private where
 
   axServer: (Integer, SExpression->Void) -> Void
   multiServ: SExpression -> Void
+
   getConstructorXML: String -> String
   getConstructorHTML: String -> String
   getCommandXML: (SExpression,String) -> Void
@@ -16,10 +17,18 @@ AxiomServer: public == private where
 
   getFile: (SExpression,String) -> Void
   getCommand: (SExpression,String) -> Void
+
+  handleCompCellString: (SExpression,String) -> Void
+  sendCompCellString: SExpression -> Void
+  handleInsert: (SExpression,String) -> Void
+  sendInsertFile: SExpression -> Void
+
   lastStep: () -> String
   lastType: () -> String
+
   formatMessages: String -> String
   getContentType: String -> String
+
   getDescription: String -> String
   getInterp: (SExpression,String) -> Void
   getLisp:   (SExpression,String) -> Void
@@ -104,71 +113,147 @@ AxiomServer: public == private where
         WriteLine$Lisp  concat ["request type: ",reqtype]
 
         if reqtype = "GET" then
-          StringMatch("GET ([^ ]*)",headers)$Lisp
-          u:UniversalSegment(Integer)
-          u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
-          getFile(s,headers.u)
-
-        if reqtype = "POST" and StringMatch("command=(.*)$",headers)$Lisp > 0
-         then
-          u:UniversalSegment(Integer)
-          u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
-          getCommand(s,headers.u)
-
-        if reqtype = "POST" and StringMatch("cxml=(.*)$",headers)$Lisp > 0
-         then
-          u:UniversalSegment(Integer)
-          u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
-          getCommandXML(s,headers.u)
-
-        if reqtype = "POST" and StringMatch("interpcall=(.*)$",headers)$Lisp > 0
-         then
+          if position("compCellString=yes",headers,1)$String > 0 then
+            WriteLine$Lisp "GET: compCellString"
+            sendCompCellString(s)
+          else
+            StringMatch("GET ([^ ]*)",headers)$Lisp
             u:UniversalSegment(Integer)
-            u := segment(MatchBeginning(1)$Lisp+1,_
-                         MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            getFile(s,headers.u)
+
+        if reqtype = "POST" then
+          if position("command=",headers,1)$String > 0 then
+            StringMatch("command=(.*)$",headers)$Lisp
+            u:UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            getCommand(s,headers.u)
+
+          else if position("cxml=",headers,1)$String > 0 then
+            StringMatch("cxml=(.*)$",headers)$Lisp
+            u:UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            getCommandXML(s,headers.u)
+
+          else if position("interpcall=",headers,1)$String > 0 then
+            StringMatch("interpcall=(.*)$",headers)$Lisp
+            u:UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
             getInterp(s,headers.u)
-        if reqtype = "POST" and StringMatch("lispcall=(.*)$",headers)$Lisp > 0
-         then
+
+          else if position("lispcall=",headers,1)$String > 0 then
+            StringMatch("lispcall=(.*)$",headers)$Lisp
             u:UniversalSegment(Integer)
-            u := segment(MatchBeginning(1)$Lisp+1,_
-                         MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
             getLisp(s,headers.u)
-        if reqtype = "POST" and StringMatch("showcall=(.*)$",headers)$Lisp > 0
-         then
+
+          else if position("showcall=",headers,1)$String > 0 then
+            StringMatch("showcall=(.*)$",headers)$Lisp
             u:UniversalSegment(Integer)
-            u := segment(MatchBeginning(1)$Lisp+1,_
-                         MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
             getShow(s,headers.u)
-        if reqtype = "POST" and StringMatch("getconstructorhtml=(.*)$",headers)$Lisp > 0
-         then
+
+          else if position("getconstructorhtml=",headers,1)$String > 0 then
+            StringMatch("getconstructorhtml=(.*)$",headers)$Lisp
             u:UniversalSegment(Integer)
-            u := segment(MatchBeginning(1)$Lisp+1,_
-                         MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
             writeToSocket(s,getConstructorHTML(headers.u)) 
 
-        if reqtype = "POST" and StringMatch("getconstructorxml=(.*)$",headers)$Lisp > 0
-         then
+          else if position("getconstructorxml=",headers,1)$String > 0 then
+            StringMatch("getconstructorxml=(.*)$",headers)$Lisp
             u:UniversalSegment(Integer)
-            u := segment(MatchBeginning(1)$Lisp+1,_
-                         MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
             writeToSocket(s,getConstructorXML(headers.u))
 
-        if reqtype = "POST" and StringMatch("asqxml=(.*)$",headers)$Lisp > 0
-         then
+          else if position("asqxml=",headers,1)$String > 0 then
+            StringMatch("asqxml=(.*)$",headers)$Lisp
             u:UniversalSegment(Integer)
-            u := segment(MatchBeginning(1)$Lisp+1,_
-                         MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
             writeToSocket(s,asqXML(headers.u))
 
-        if reqtype = "POST" and StringMatch("writetofile=(.*)$",headers)$Lisp > 0
-         then
+          else if position("writetofile=",headers,1)$String > 0 then
+            StringMatch("writetofile=(.*)$",headers)$Lisp
             u:UniversalSegment(Integer)
-            u := segment(MatchBeginning(1)$Lisp+1,_
-                         MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
             writeToFile(headers.u)
+
+          else if position("compCellString=",headers,1)$String > 0 then
+            WriteLine$Lisp "POST: compCellString"
+            StringMatch("compCellString=(.*)$",headers)$Lisp
+            u:UniversalSegment(Integer)
+            u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+            handleCompCellString(s,headers.u)
+
+          else if position("filePick",headers,1)$String > 0 then
+            WriteLine$Lisp "POST: filePick"
+            handleInsert(s,headers)
+
+          else if position("fileInsert=yes",headers,1)$String > 0 then
+            WriteLine$Lisp "POST: fileInsert"
+            sendInsertFile(s)
+
 
         WriteLine("multiServ end")$Lisp
         WriteLine("")$Lisp
+
+  sendInsertFile(s:SExpression):Void ==
+    WriteLine$Lisp "sendInsertFile begin"
+    f:=MAKE_-STRING_-INPUT_-STREAM(FILEINSERT$Lisp)$Lisp
+    SiCopyStream(f,s)$Lisp
+    CLOSE(f)$Lisp
+    CLOSE(s)$Lisp
+    WriteLine$Lisp "sendInsertFile end"
+
+  handleInsert(s:SExpression,headers:String):Void ==
+         WriteLine$Lisp "handleInsert begin"
+         f:=MAKE_-STRING_-INPUT_-STREAM("HTTP/1.1 204 OK")$Lisp
+         SiCopyStream(f,s)$Lisp
+         CLOSE(f)$Lisp
+         CLOSE(s)$Lisp
+         -- get boundary of multipart/form-data
+         StringMatch("boundary=[-]+([0-9]+)",headers)$Lisp
+         u:UniversalSegment(Integer)
+         u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+         boundary:String := headers.u
+         WriteLine$Lisp "boundary begin"
+         WriteLine$Lisp boundary
+         WriteLine$Lisp "boundary end"
+         StringMatch(concat [ boundary,".*",boundary,".*Content-Type: [^",STRING(NewLine$Lisp)$Lisp,"]*(.*)",boundary ],headers)$Lisp
+         u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+         fileInsert:String := headers.u
+         StringMatch("(<div .*</div>)",fileInsert)$Lisp
+         u := segment(MatchBeginning(1)$Lisp+1,MatchEnd(1)$Lisp)$UniversalSegment(Integer)
+         fileInsert := fileInsert.u
+         WriteLine$Lisp "file start"
+         WriteLine$Lisp fileInsert
+         WriteLine$Lisp "file end"
+         SETQ(FILEINSERT$Lisp,fileInsert)$Lisp
+         WriteLine$Lisp "handleInsert end"
+
+   sendCompCellString(s:SExpression):Void ==
+         WriteLine$Lisp "sendCompCellString begin"
+         --
+         sendString:String := ""
+         sendString := concat [sendString,"HTTP/1.1 200 OK",STRING(NewLine$Lisp)$Lisp]
+         sendString := concat [sendString,"Content-Type: text/xml",STRING(NewLine$Lisp)$Lisp]
+         sendString := concat [sendString,STRING(NewLine$Lisp)$Lisp]
+         sendString := concat [sendString,COMPCELLSTRING$Lisp]
+         f:=MAKE_-STRING_-INPUT_-STREAM(sendString)$Lisp
+         SiCopyStream(f,s)$Lisp
+         CLOSE(f)$Lisp
+         CLOSE(s)$Lisp
+         WriteLine$Lisp "sendCompCellString end"
+
+
+  handleCompCellString(s:SExpression,compCellString:String):Void ==
+         WriteLine$Lisp "handleCompCellString: "compCellString
+         SETQ(COMPCELLSTRING$Lisp,compCellString)$Lisp
+         WriteLine$Lisp concat ["handleCompCellString Lisp: ",compCellString$Lisp]
+         f:=MAKE_-STRING_-INPUT_-STREAM(COMPCELLSTRING$Lisp)$Lisp
+         SiCopyStream(f,s)$Lisp
+         CLOSE(f)$Lisp
+         CLOSE(s)$Lisp
+         WriteLine$Lisp "handleCompCellString end"
 
   makeErrorPage(msg:String):String ==
      page:String:="<!DOCTYPE html PUBLIC "
