@@ -230,7 +230,7 @@ AxiomServer: public == private where
          SETQ(FILEINSERT$Lisp,fileInsert)$Lisp
          WriteLine$Lisp "handleInsert end"
 
-   sendCompCellString(s:SExpression):Void ==
+  sendCompCellString(s:SExpression):Void ==
          WriteLine$Lisp "sendCompCellString begin"
          --
          sendString:String := ""
@@ -293,7 +293,7 @@ AxiomServer: public == private where
 
   getFile(s:SExpression,pathvar:String):Void ==
 --     WriteLine("")$Lisp
---     pathvar := concat [ "/home/alfredo/Projects/Jyper/", pathvar ]
+     pathvar := concat [ "/home/alfredo/Projects/Jyper/", pathvar ]
      WriteLine$Lisp concat ["getFile: ",pathvar]
      params:=split(pathvar,char "?")
      if #params ^= 1
