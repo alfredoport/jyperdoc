@@ -273,6 +273,23 @@ function removeOutput(command) {
   return ncommand;
 }
 
+/* this function sends compCell as serialized string */
+
+function sendCompCell(compCellString) {
+	var http_request = HTTP.newRequest();
+	http_request.open('POST', '127.0.0.1:8085', true);
+	http_request.onreadystatechange = function() {
+		if (http_request.readyState == 4) {
+			if (http_request.status == 200) {
+				var answer = http_request.responseText;
+				alert(answer);
+			}
+		}	
+	}
+	http_request.setRequestHeader('Content-Type', 'text/plain');								    http_request.send("compCellString="+compCellString);
+}
+
+
 
 /* Here's the structure:
 
@@ -822,6 +839,78 @@ function showContext(e) {
 	}
 
 /*
+ * next item is to serialize a compCell
+ */
+  var serialBox = document.createElementNS('http://www.w3.org/1999/xhtml','div');
+	serialBox.appendChild(document.createTextNode('serialize'));
+	serialBox.className = "context-item";
+	serialBox.onclick = function() {
+		var compCellString = (new XMLSerializer()).serializeToString(g);
+//      alert(compCellString);
+    sendCompCell(compCellString);
+		var downBox = document.createElementNS('http://www.w3.org/1999/xhtml','div');
+		downBox.appendChild(document.createTextNode('download'));
+		downBox.setAttribute('style','cursor: pointer; margin-left: 10px; border: outset 2px silver; width: 80px; text-align: center;');
+		serialBox.appendChild(downBox);
+		downBox.onclick = function(event) {
+			window.open('127.0.0.1:8085?compCellString=yes');
+			event.stopPropagation();
+			serialBox.removeChild(downBox);
+		}
+	}
+
+/*
+ * next item is to insert a saved compCell
+ */
+  var insertFile = document.createElementNS('http://www.w3.org/1999/xhtml','div');
+	insertFile.appendChild(document.createTextNode('insert file'));
+	insertFile.className = "context-item";
+	insertFile.onclick = function(event) {
+		if (event.target != insertFile) return;
+		event.stopPropagation();
+		var filePick = document.createElementNS('http://www.w3.org/1999/xhtml','input');
+		filePick.setAttribute('type','file');
+		filePick.setAttribute('name','filePick');
+		var fileForm = document.createElementNS('http://www.w3.org/1999/xhtml','form');
+		fileForm.setAttribute('action','127.0.0.1:8085');
+		fileForm.setAttribute('method','post');
+		fileForm.setAttribute('enctype','multipart/form-data');
+		fileForm.appendChild(filePick);
+		var submitButt = document.createElementNS('http://www.w3.org/1999/xhtml','input');
+		submitButt.setAttribute('type','submit');
+		submitButt.value = 'select';
+		submitButt.onclick = function() {
+			var insertButt = document.createElementNS('http://www.w3.org/1999/xhtml','input');
+			insertButt.setAttribute('type','button');
+			insertButt.value = 'insert';
+			insertButt.onclick = function() {
+				var http_request = HTTP.newRequest();
+				http_request.open('POST', '127.0.0.1:8085', true);
+				http_request.onreadystatechange = function() {
+					if (http_request.readyState == 4) {
+						if (http_request.status == 200) {
+							var compCellString = http_request.responseText;
+							//alert(compCellString);
+							var compCellRange = document.createRange();
+							compCellRange.selectNodeContents(g);
+							var compCellFragment = compCellRange.createContextualFragment(compCellString);
+							g.appendChild(handleCompCellFrag(compCellFragment));
+							fileForm.removeChild(filePick);
+							fileForm.removeChild(submitButt);
+							fileForm.removeChild(insertButt);
+						}
+					}
+				}
+				http_request.setRequestHeader('Content-Type', 'text/plain');
+				http_request.send("fileInsert=yes");
+			}
+			fileForm.appendChild(insertButt);
+		}
+		fileForm.appendChild(submitButt);
+		insertFile.appendChild(fileForm);
+	}
+
+/*
  * last item in menu is for closing the menu without taking any action
  */
 	var closeBox = document.createElementNS('http://www.w3.org/1999/xhtml','div');
@@ -833,12 +922,15 @@ function showContext(e) {
  * append above menu items to ctgBox
  */
 	// create the div to hold the items
+	menuBox.appendChild(closeBox);
 	menuBox.appendChild(compIdBox);
 	menuBox.appendChild(cellBox);
 	menuBox.appendChild(branchBox);
 	menuBox.appendChild(headBox);
 	menuBox.appendChild(rotateBox);
 	menuBox.appendChild(textOpt);
+	menuBox.appendChild(serialBox);
+	menuBox.appendChild(insertFile);
 	menuBox.appendChild(closeBox);
 
 /*
@@ -855,6 +947,46 @@ function showContext(e) {
 	}
 
 
+/*
+ * handleFileInsert gets the saved compCell from the server
+ * and cleans it up, in particular removing step numbers, so
+ * I remove number from the ( )-> before the command input
+ * box however I leave the step num in the the <div class="stepnum">
+ * box because the order of the old inserted commands might be
+ * useful.
+ */
+var uniqueInsId = (function() {
+		var num = 1;
+		return function() { return num++; }
+
+})()
+
+function handleCompCellFrag(compCellFrag) {
+	// this depends on the fact that there is only one child node
+  // because the serialization option works on a compCell so tmp
+	// is the top level compCell
+	var tmpComp = compCellFrag.childNodes[0];
+	var insNum = uniqueInsId();
+	(function(tmpComp) {
+	 var tmpResult = getResultBox(tmpComp);
+	 var tmpNum = getStepNum(tmpComp);
+	 var tmpStep = getStepBox(tmpResult);
+	 for (var j = 0; j < tmpStep.childNodes.length; j++) {
+	 tmpStep.removeChild(tmpStep.childNodes[j]);
+	 }
+	 tmpStep.appendChild(document.createTextNode(insNum+'.'+tmpNum));
+	 tmpComp.id = 'ins'+insNum+'.'+tmpNum;
+	 var tmpSpan = getCommandBox(tmpResult).getElementsByTagName('span')[0];
+	 for (var j = 0; j < tmpSpan.childNodes.length; j++) {
+	 tmpSpan.removeChild(tmpSpan.childNodes[j]);
+	 }	
+	 tmpSpan.appendChild(document.createTextNode('(ins'+insNum+'.'+tmpNum+')->'));	 var tmpChildComps = getChildCompCells(tmpComp);
+	 for (j = 0; j < tmpChildComps.length; j++) {
+	   arguments.callee(tmpChildComps[j]);
+	 }
+	 })(tmpComp);
+	return compCellFrag;
+}
 
 
 /*
@@ -996,8 +1128,24 @@ function makeTextBox() {
     updateButt.appendChild(document.createTextNode('update display'));
     updateButt.setAttribute('style','cursor: pointer; border: outset 2px silver; padding: 0px 5px;');
     updateButt.onclick = function() {
-	textString = textareaBox.value;
-	var textRange = document.createRange();
+	  var textString = textareaBox.value;
+	  // apply tex2mml on tex (inline) elements here
+	var startTex;
+  var endTex;
+  while ( (startTex = textString.search('<tex>')) != -1 ) {
+		var endTex = textString.search('</tex>');
+		var texString = textString.slice(startTex+5,endTex);
+		var mmlString = tex2mml(texString,'inline');
+		textString = textString.slice(0,startTex) + mmlString + textString.slice(endTex+6);
+	}
+  // apply tex2mml on Tex (block) elements here
+	while ( (startTex = textString.search('<Tex>')) != -1 ) {
+		var endTex = textString.search('</Tex>');
+		var texString = textString.slice(startTex+5,endTex);
+		var mmlString = tex2mml(texString,'display');
+		textString = textString.slice(0,startTex) + mmlString + textString.slice(endTex+6);
+	}
+	textRange = document.createRange();
 	textRange.selectNodeContents(displayBox);
 	var textFragment = textRange.createContextualFragment(textString);
 	var oneBox = document.createElementNS('http://www.w3.org/1999/xhtml','div');
