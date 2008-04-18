@@ -922,7 +922,6 @@ function showContext(e) {
  * append above menu items to ctgBox
  */
 	// create the div to hold the items
-	menuBox.appendChild(closeBox);
 	menuBox.appendChild(compIdBox);
 	menuBox.appendChild(cellBox);
 	menuBox.appendChild(branchBox);
