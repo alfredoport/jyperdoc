@@ -31,70 +31,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* We need to process commands
- * that start with ")".
- */
-function checkCommand(command) {
 
-  /*if (/\)show/.test(command)) {
-
-    command = 'showcall='+command;
-  }
-	else if (/\)help/.test(command)) {
-
-		command = 'interpcall='+command
-	}
-  else {*/
-    
-    command = 'command='+command;
-
-  //}
-  return command;
-}
-
-/********************************
- * Some functions are not currently
- * allowed to be ran in this interface.
- ********************************/
-
-function invalidCommands(command) {
-
-  if (/\)draw/.test(command)) {
-    return true;
-  }
-  return true;
-
-}
-
-/********************************
- * The format of passing arguments
- * is 'argument,value'. We use
- * ',' instead of the standard '='
- * so it is not confused by the
- * server at the time of processing
- * the commands sent to it.
- * ******************************/
-function redirectToBrowse(value) {
-
-    document.location = 'browse.xhtml?' + value + "," + document.getElementById('searchbox').value;
-}
-
-function asq(domain, key) {
-
-    document.location = 'browse.xhtml?' +  "asqxml=" + domain + "," + key;
-}
-
-function remove_extra(targ) {
-
-		targ.value = targ.value.replace('/\n+$/g',"");
-}
-
-/* ***************************
- * Every time a key is pressed
- * we check to see if the user
- * has requested for a cell to
- * be evaluate it. 
- * **************************/
 function keyPressed(e) {
   var keynum, keychar, shift;
   //  var command = document.getElementById ('commreq').value
@@ -113,16 +50,9 @@ function keyPressed(e) {
     keynum = e.which
   }
   shift = e.shiftKey;
-
   if(shift && keynum == 13 && command != "") {
-    //alert(targ.id);
     makeRequest(targ);
   }
-}
-
-function linkEvaluate(stepNum) {
-
-  makeRequest(document.getElementById(stepNum));
 }
 
 // I think the only place this is used is in making the initial
@@ -134,43 +64,7 @@ function putFocus() {
   command.focus();
 }
 
-function activeCell(targ) {
-
-  document.getElementById(targ.id).style.border="solid 1px #0000FF";
-}
-
-function passiveCell(targ) {
-
-  document.getElementById(targ.id).style.border="solid 1px #CCCCCC";
-}
-
-function onBlur(e) {
-
-  var targ = e.target;
-  targ.parentNode.lastChild.style.display="none";
-  passiveCell(targ);
-}
-
-function onFocus(e) {
-
-  var targ = e.target;
-  var children = document.getElementsByTagName("*");
-  for (var i = 0; i < children.length; i++) {
-    if (children[i].className == "evaluate")
-      children[i].style.display="none";
-    if (children[i].className == "cell_input")
-      children[i].style.border="solid 1px #CCCCCC";
-  }
-  targ.parentNode.lastChild.style.display="inline";
-  document.getElementById(targ.id).style.border="solid 1px #0000FF";
-
-  //activeCell(targ);
-  //var root = ctgCompCell(targ);
-  //document.getElementById(root.lastChild.id).style.display="inline";
-}
-
 function changeFocus(e) {
-
   if (e.target)
   {
     targ = e.target;
@@ -179,42 +73,9 @@ function changeFocus(e) {
   }
 }
 
-/* This function is used to resize
- * the textareas */ 
-function resize_textarea(t) {
-  a = t.value.split('\n');
-  t.rows = a.length;
-}
-
-/* This is a dummy writeToFile function.
- * Need to be re-written. */
-function writeToFile(path,content) {
-
-  //content = content.replace('/\n+$/g',"");
-  makeRequestServer('command','ifile:TextFile := open("'+path+'","output");'
-  + 'content:String:="'+content+'";'
-  + 'writeLine!(ifile,content);'
-  + 'close!ifile;');
-}
-
-function readFromEditor() {
-
-  // getCode is magic from Codepress.
-  // One gives the id of the textarea
-  // and getCode gets the content of it.
-  //writeToFile('casn.input',area.getCode());
-  //makeRequestServer('interpcall',')read casn.input');
-  
-}
-
-
-function compileFromEditor() {
-
-  writeToFile('casn.input',area.getCode());
-  makeRequestServer('interpcall',')compile casn.input');
-}
-
+/* this function sends a command */
 // check at some point whether I can have targ as an argument
+
 function makeRequest(targ) {
     // Other methods for creating the XMLHttpRequest object 
     // in browsers different from Firefox and IE need to
@@ -232,49 +93,70 @@ function makeRequest(targ) {
         }
     }
     // If the previous failed then try for Firefox xmlhttp object.
-    if (!http_request && typeof XMLHttpRequest != 'undefined') {
-      try {
+    if (!http_request) {
         http_request = new XMLHttpRequest();
-      }
-      catch (e) {
-
-        http_request = false;
-      }
     }
-    if (!http_request && window.createRequest) {
-      try {
-        http_request = window.createRequest();
-      }
-      catch (e) {
-        http_request = false;
-      }
-    }
-
     var command = targ.value;
     http_request.open('POST', '127.0.0.1:8085', true);
     http_request.onreadystatechange = addCompCell;
     http_request.setRequestHeader('Content-Type', 'text/plain');
-    //http_request.send(checkCommand(removeOutput(command)));
-    http_request.send(checkCommand(command));
-
+    http_request.send("command="+command);
 }
 
-function newRequest(targ) {
+/* HTTP.newRequest() utility from David Flanagan */
+// list of XMLHttpRequest creation factories to try
+var HTTP = {};
 
-  targ.value = checkCommand(command);
-  makeRequest(targ);
+HTTP._factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActieXObject("Microsoft.XMLHTTP"); }
+    ];
+
+HTTP._factory = null;
+
+HTTP.newRequest = function() {
+    if (HTTP._factory != null) return HTTP._factory();
+    for (var i = 0; i < HTTP._factories.length; i++) {
+	try {
+	    var factory = HTTP._factories[i];
+	    var request = factory();
+	    if (request != null) {
+		HTTP._factory = factory;
+		return request;
+	    }
+	}
+	catch(e) {
+	    continue;
+	}
+    }
+    // If we get here we failed
+    HTTP._factory = function() {
+	throw new Error("XMLHttpRequest not supported");
+    }
+    HTTP._factory();
 }
 
-function removeOutput(command) {
+/* this function sends compCell as serialized string */
 
-  var ncommand = command.replace(/^\n+|\n+$/g,"");
-  ncommand = ncommand.replace(/^\s+|\s+$/g,"");
-  ncommand = ncommand.replace(/\n+/g,";");
-  return ncommand;
+function sendCompCell(compCellString) {
+    var http_request = HTTP.newRequest();
+    http_request.open('POST', '127.0.0.1:8085', true);
+    http_request.onreadystatechange = function() {
+	if (http_request.readyState == 4) {
+	    if (http_request.status == 200) {
+		var answer = http_request.responseText;
+		alert(answer);
+	    }
+	}
+    }
+    http_request.setRequestHeader('Content-Type', 'text/plain');
+    http_request.send("compCellString="+compCellString);
 }
 
 
-/* Here's the structure:
+/* 
+   Here's the structure:
 
 <div class="compCell">
   <div class="result">
@@ -288,6 +170,8 @@ function removeOutput(command) {
         <span>(stepnum)-></span>
 	<input class="inComm" 
                type="text" 
+               onkeypress="keyPressed(event)" 
+               onclick="changeFocus(event)" 
                size="80" 
                value="command" 
                alt="command"/><!-- this contains the command sent to fricas -->
@@ -325,91 +209,45 @@ function makeCompCell(mathString,parent) {
     var mathFragment = mathRange.createContextualFragment(mathString);
     resultBox.appendChild(mathFragment);
     compCell.appendChild(resultBox);
-
     // command and type come bare and need to be decorated, i.e.
     // the command has to have the form and input boxes constructed and
     // the type needs just the text "Type: " added.
-
 //    alert('makeCompCell1');
     var stepNum = getStepBox(resultBox).firstChild.data;
 //    alert('makeCompCell2');
-
     var typeBox = getTypeBox(resultBox);
-    var commandBox = getCommandBox(resultBox); 
+    var commandBox = getCommandBox(resultBox);
     var command = commandBox.firstChild.data;
-    
-		// This is probably not needed anymore
-    // Convert the ; into breaklines
-    //command = command.replace(/;+/g,"\n");
-
-    // Count the number of lines so we
-    // can adjust the inputBox attribute 
-    // (textarea) to have this number of rows.
-    var nrows = command.split('\n').length;
-
     compCell.setAttribute('id', 'step'+stepNum);
-    //formBox = document.createElementNS('http://www.w3.org/1999/xhtml','form');
+    formBox = document.createElementNS('http://www.w3.org/1999/xhtml','form');
     spanBox = document.createElement('span');
     spanBox.appendChild(document.createTextNode('('+stepNum+') -> '));
-    //formBox.appendChild(spanBox);
-    inputBox = document.createElementNS('http://www.w3.org/1999/xhtml','textarea');
-
-//    alert('keyPressedReval(event,' + "'step" + stepNum + "'" + ')');
-    //inputBox.setAttribute('onkeypress','keyPressedReval(event,' + "'step" + stepNum + "'" + ')');
+    formBox.appendChild(spanBox);
+    inputBox = document.createElementNS('http://www.w3.org/1999/xhtml','input');
     inputBox.setAttribute('onkeypress','keyPressed(event)');
-    inputBox.setAttribute('onclick','changeFocus(event)'); 
-    inputBox.setAttribute('onkeyup','resize_textarea(event.target)');
-    inputBox.setAttribute('onkeydown','remove_extra(event.target)');
-    inputBox.setAttribute('onfocus','onFocus(event)');
-    //inputBox.setAttribute('onblur','onBlur(event)');
-    inputBox.setAttribute('class','cell_input');
-    //inputBox.setAttribute('type','text'); 
-    inputBox.setAttribute('rows',nrows);
-    inputBox.setAttribute('cols','80');
+    inputBox.setAttribute('onclick','changeFocus(event)');
+    inputBox.setAttribute('class','inComm');
+    inputBox.setAttribute('type','text');
+    inputBox.setAttribute('size','80');
     inputBox.setAttribute('value',command);
-    inputBox.setAttribute('alt',command); 
-    inputBox.setAttribute('id', stepNum);
+    inputBox.setAttribute('alt',command);
     inputBox.appendChild(document.createTextNode(command));
-
-    //inputBox.appendChild(spanBox);
-    //formBox.appendChild(inputBox);
-    
-    // Type: Only display the type of the result
-    // if it something to show (error messages
-    // do not have types :) )
-    if (typeBox.firstChild != null)
-      typeBox.insertBefore(document.createTextNode('Type: '),typeBox.firstChild);
+    formBox.appendChild(inputBox);
+    // type
+    typeBox.insertBefore(document.createTextNode('Type: '),typeBox.firstChild);
     commandBox.removeChild(commandBox.firstChild);
-  
-    //commandBox.appendChild(formBox);
-    commandBox.appendChild(inputBox);
-
-    // Evaluate Link
-    var evaluate = document.createElementNS('http://www.w3.org/1999/xhtml','a');
-    evaluate.setAttribute('class','evaluate');
-    evaluate.setAttribute('href','javascript:void%200');
-    evaluate.setAttribute('onclick','javascript:linkEvaluate('+stepNum+')');
-    evaluate.appendChild(document.createTextNode('evaluate'));
-    commandBox.appendChild(evaluate);
-
+    commandBox.appendChild(formBox);
     if (parent.className == "compCell") {
         //insert before parents resultBox
-
-	updateResultBox(compCell, parent);
-	//parent.insertBefore(compCell,getResultBox(parent));
+	parent.insertBefore(compCell,getResultBox(parent));
 	inputBox.focus();
     } 
     else {//parent.className = "rootCompCell"
-
-	//Make sure to restart the numbers of rows to 1
-	//in the rootCompCell textarea.
-        parent.firstChild.firstChild.setAttribute('rows','1');
         //insert at top of stack, childNodes[0] is the command box
 	parent.insertBefore(compCell,getFirstCompCell(parent));
 	//parent.appendChild(compCell);
     }
     // do I need 'onclick','javascript:showContext(event)'?
-	
 }
 
 /* Each compCell has a unique resultBox determined by its className
@@ -420,23 +258,6 @@ function getResultBox(compCell) {
     for (var i = 0; i < children.length; i++) {
 	if (CSSClass.is(children[i], 'result')) return children[i];
     }
-}
-
-/* Takes a parent node and replaces its contenst
- * with the ones from compCell. This is used when
- * the user updates/changes the command in one
- * of the cells.
- */
-
-function updateResultBox(compCell, parent) {
-
-    var children = parent.childNodes;
-    for (var i = 0; i < children.length; i++)
-      parent.removeChild(children[i]);
-    
-    children = compCell.childNodes;
-    for (var i = 0; i < children.length; i++)
-      parent.appendChild(children[i]);
 }
 
 /* I don't want to rely on the specific structure of the resultBox to access
@@ -538,6 +359,15 @@ function getSibCompCells(compCell) {
     return sibs;
 }
 
+function getChildCompCells(compCell) {
+    var children = compCell.childNodes;
+    var sibs = [];
+    for (var i = 0; i < children.length; i++) {
+	if (CSSClass.is(children[i],'compCell')) sibs.push(children[i])
+    }
+    return sibs;
+}
+
 /* addCompCell is the 'onreadystatechange' function in the
    XMLHttpRequest object.  
 
@@ -580,7 +410,6 @@ function addCompCell() {
 	   // restore the original command that was in the input box
            targ.value = targ.getAttribute("alt");
 	   var mathString = http_request.responseText;
-	   //alert(mathString);
 	   makeCompCell(mathString,parent);
        }
        else {
@@ -612,8 +441,8 @@ function showContext(e) {
     while ( !f.className ) {
 	f = f.parentNode;
     }
+    // pick which classes of elements get this context menu
     if ( !(CSSClass.is(f,'mathml') || CSSClass.is(f,'algebra') || CSSClass.is(f,'type') || CSSClass.is(f,'compCell') || CSSClass.is(f,'rootCompCell'))) return;
-//    if ( CSSClass.is(f,'command') || CSSClass.is(f,'inComm') ) return;
     if (f.className == 'compCell') var g = f;
     else var g = ctgCompCell(f);
     // use an anonymous function to hold everything else
@@ -820,6 +649,78 @@ function showContext(e) {
 		textMenu = null;
 	    }
 	}
+/*
+ * next item is to serialize a compCell
+ */
+	var serialBox = document.createElementNS('http://www.w3.org/1999/xhtml','div');
+	serialBox.appendChild(document.createTextNode('serialize'));
+	serialBox.className = "context-item";
+	serialBox.onclick = function() {
+	    var compCellString = (new XMLSerializer()).serializeToString(g);
+//	    alert(compCellString);
+	    sendCompCell(compCellString);
+	    var downBox = document.createElementNS('http://www.w3.org/1999/xhtml','div');
+	    downBox.appendChild(document.createTextNode('download'));
+	    downBox.setAttribute('style','cursor: pointer; margin-left: 10px; border: outset 2px silver; width: 80px; text-align: center;');
+	    serialBox.appendChild(downBox);
+	    downBox.onclick = function(event) {
+		window.open('127.0.0.1:8085?compCellString=yes');
+		event.stopPropagation();
+		serialBox.removeChild(downBox);
+	    }
+	}
+/*
+ * next item is to insert a saved compCell
+ */
+	var insertFile = document.createElementNS('http://www.w3.org/1999/xhtml','div');
+	insertFile.appendChild(document.createTextNode('insert file'));
+	insertFile.className = "context-item";
+	insertFile.onclick = function(event) {
+	    if (event.target != insertFile) return;
+	    event.stopPropagation();
+	    var filePick = document.createElementNS('http://www.w3.org/1999/xhtml','input');
+	    filePick.setAttribute('type','file');
+	    filePick.setAttribute('name','filePick');
+	    var fileForm = document.createElementNS('http://www.w3.org/1999/xhtml','form');
+	    fileForm.setAttribute('action','127.0.0.1:8085');
+	    fileForm.setAttribute('method','post');
+	    fileForm.setAttribute('enctype','multipart/form-data');
+	    fileForm.appendChild(filePick);
+	    var submitButt = document.createElementNS('http://www.w3.org/1999/xhtml','input');
+	    submitButt.setAttribute('type','submit');
+            submitButt.value = 'select';
+            submitButt.onclick = function() {
+                var insertButt = document.createElementNS('http://www.w3.org/1999/xhtml','input');
+                insertButt.setAttribute('type','button');
+                insertButt.value = 'insert';
+		insertButt.onclick = function() {
+		    var http_request = HTTP.newRequest();
+		    http_request.open('POST', '127.0.0.1:8085', true);
+		    http_request.onreadystatechange = function() {
+			if (http_request.readyState == 4) {
+			    if (http_request.status == 200) {
+				var compCellString = http_request.responseText;
+				//alert(compCellString);
+				var compCellRange = document.createRange();
+				compCellRange.selectNodeContents(g);
+				var compCellFragment = compCellRange.createContextualFragment(compCellString);
+				g.appendChild(handleCompCellFrag(compCellFragment));
+				fileForm.removeChild(filePick);
+				fileForm.removeChild(submitButt);
+				fileForm.removeChild(insertButt);
+			    }
+			}
+		    }
+		    http_request.setRequestHeader('Content-Type', 'text/plain');
+		    http_request.send("fileInsert=yes");                        
+
+                }
+		fileForm.appendChild(insertButt);
+            }
+	    fileForm.appendChild(submitButt);
+	    insertFile.appendChild(fileForm);
+	    
+	}
 
 /*
  * last item in menu is for closing the menu without taking any action
@@ -839,6 +740,8 @@ function showContext(e) {
 	menuBox.appendChild(headBox);
 	menuBox.appendChild(rotateBox);
 	menuBox.appendChild(textOpt);
+	menuBox.appendChild(serialBox);
+	menuBox.appendChild(insertFile);
 	menuBox.appendChild(closeBox);
 
 /*
@@ -851,10 +754,52 @@ function showContext(e) {
  * attach everything to document
  */
 	document.getElementById('contents').appendChild(menuBox);
+	menuBox.scrollIntoView();
     })()
 	}
 
+/*
+ * handleFileInsert gets the saved compCell from the server
+ * and cleans it up, in particular removing step numbers, so
+ * I remove number from the ( )-> before the command input 
+ * box however I leave the step num in the the <div class="stepnum">
+ * box because the order of the old inserted commands might be
+ * useful.
+ */
+var uniqueInsId = (function() {
+	var num = 1;
+	return function() {
+	    return num++;
+	}
+    })()
 
+function handleCompCellFrag(compCellFrag) {
+    // this depends on the fact that there is only one child node
+    // because the serialization option works on a compCell so tmp
+    // is the top level compCell
+    var tmpComp = compCellFrag.childNodes[0];
+    var insNum = uniqueInsId();
+    (function(tmpComp) {
+	var tmpResult = getResultBox(tmpComp);
+	var tmpNum = getStepNum(tmpComp);
+	var tmpStep = getStepBox(tmpResult);
+	for (var j = 0; j < tmpStep.childNodes.length; j++) {
+	    tmpStep.removeChild(tmpStep.childNodes[j]);
+	}
+	tmpStep.appendChild(document.createTextNode(insNum+'.'+tmpNum));
+	tmpComp.id = 'ins'+insNum+'.'+tmpNum;
+	var tmpSpan = getCommandBox(tmpResult).getElementsByTagName('span')[0];
+	for (var j = 0; j < tmpSpan.childNodes.length; j++) {
+	    tmpSpan.removeChild(tmpSpan.childNodes[j]);
+	}
+	tmpSpan.appendChild(document.createTextNode('(ins'+insNum+'.'+tmpNum+')->'));
+	var tmpChildComps = getChildCompCells(tmpComp);
+	for (j = 0; j < tmpChildComps.length; j++) {
+	    arguments.callee(tmpChildComps[j]);
+	}
+    })(tmpComp);
+    return compCellFrag;
+}
 
 
 /*
@@ -967,6 +912,8 @@ function rotateHead(compCell) {
     var parent = compCell.parentNode;
     var sibCompCells = getSibCompCells(compCell);
     var j;
+    // also need to handle case when there are no sibling compCells
+    // but still want to rotate with result box of ctgCompCell
     if ( sibCompCells.length > 1 ) { //do the rotation
 	// find index of compCell among siblings
 	for ( i = 0; i < sibCompCells.length; i++) {
@@ -996,7 +943,23 @@ function makeTextBox() {
     updateButt.appendChild(document.createTextNode('update display'));
     updateButt.setAttribute('style','cursor: pointer; border: outset 2px silver; padding: 0px 5px;');
     updateButt.onclick = function() {
-	textString = textareaBox.value;
+	var textString = textareaBox.value;
+	// apply tex2mml on tex (inline) elements here
+	var startTex;
+	var endTex;
+	while ( (startTex = textString.search('<tex>')) != -1 ) {	
+	    var endTex = textString.search('</tex>');
+	    var texString = textString.slice(startTex+5,endTex);
+	    var mmlString = tex2mml(texString,'inline');
+	    textString = textString.slice(0,startTex) + mmlString + textString.slice(endTex+6);
+	}
+	// apply tex2mml on Tex (block) elements here
+	while ( (startTex = textString.search('<Tex>')) != -1 ) {	
+	    var endTex = textString.search('</Tex>');
+	    var texString = textString.slice(startTex+5,endTex);
+	    var mmlString = tex2mml(texString,'display');
+	    textString = textString.slice(0,startTex) + mmlString + textString.slice(endTex+6);
+	}
 	var textRange = document.createRange();
 	textRange.selectNodeContents(displayBox);
 	var textFragment = textRange.createContextualFragment(textString);
@@ -1049,6 +1012,7 @@ function makeTextBox() {
     }
     // textBox to hold everything
     var textBox = document.createElementNS('http://www.w3.org/1999/xhtml','div');
+    textBox.className = 'textBox';
     textBox.appendChild(editBox);
     textBox.appendChild(updateButt);
     textBox.appendChild(displayBox);
@@ -1154,146 +1118,4 @@ function drag(elementToDrag, event){
 	e.stopPropagation();
     }
 }
-
-/**************************
- * Pages Content Section
- **************************/
-
-var appname = "JyperDoc";
-
-function init() {
-	
-	  displayTitle();
-		  menu();
-}
-
-function displayTitle() {
-	
-	  var banner = document.getElementById("banner");
-		  banner.innerHTML = "<img src='notebook.gif'/>" + appname;
-			
-}
-
-function menu() {
-	
-	  var menu = document.getElementById("menu");
-		  menu.innerHTML = "<div id='links'>" +
-				"<a href='jyperdoc.xhtml' onclick='interpreter();'>Use</a>" +
-        "<a href='editor.xhtml'>Editor</a>" +
-				"<a href='man0page.xhtml'>Browse</a>" +
-				"<a href='topreferencepage.xhtml'>Reference</a>" +
-				/*"<select id='file' class='file'>" +
-				  "<option value='file'>File...</option>" +
-				  "<option value='new'>New worksheet</option>" +
-				  "<option value='open'>Upload worksheet</option>" +
-				  "<option value='save'>Save worksheet</option>" +
-			    "</select>" +
-				  "<select id='action' class='action'>" +
-				  "<option value='action'>Action...</option>" +
-				  "<option value='stack'>Stack Mode</option>" +
-				  "</select>" + */
-				"</div>";			
-}
-
-function interpreter() {
-	  var contents = document.getElementById("contents");
-		  contents.innerHTML = "<div class='rootCompCell' onclick='javascript:showContext(event);' onkeyup='javascript:resize_textarea(event.target);'>" +
-				"<div class='command'>" +
-				"<textarea id='comm' " +
-				"class='cell_input' " +
-				"step='0' " +
-				"name='command' " +
-				"rows='1' " +
-				"cols='80' " +
-				"onkeypress='keyPressed(event);' " +
-				"onfocus='onFocus(event);'></textarea>" +
-				"</div></div>";
-}
-
-function editor() {
-
-	  var contents = document.getElementById("contents");
-		  contents.innerHTML = "<div id='buttons'><button id='compile'>)compile</button>" +
-				"<button id='read'>)read</button>" +
-				"<button id='open'>open</button>" +
-				"<button id='save'>save</button>" +
-				"</div>" +
-				"<div class='editor'>" +
-				"<textarea id='myCpWindow' " +
-				"rows='30' " +
-				"cols='80' " +
-				"class='codepress javascript linenumbers'" +
-				">--This is a test.</textarea></div>";
-
-			  var selecttags = document.getElementsByTagName("select");
-			  for (var i = 0; i < selecttags.length; i++)
-					selecttags[i].style.display="none";
-}
-
-/*************************
- * Database Browse Section
- ************************/
-
-function getValues() {
-
-	var query = window.location.search;
-	// Skip the leading ?, which should always be there,
-	// but be careful anyway
-	if (query.substring(0, 1) == '?') {
-	  query = query.substring(1);
-	}
-	var data = query.split(',');
-	for (i = 0; (i < data.length); i++) {
-	  data[i] = unescape(data[i]);
-	}
-	if (data[0] == 'getconstructorhtml')
-		makeRequestServer(data[0],data[1]);
-}
-
-function makeRequestServer(command, value) {
-
-	try {
-		http_request = new ActiveXObject("Msxml2.XMLHTTP");
-	}
-	catch (e) {	
-		try {
-			http_request = new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		catch (e) {	
-			http_request = false;
-		}
-	}
-  if (!http_request && typeof XMLHttpRequest != 'undefined') {
-		try {
-			http_request = new XMLHttpRequest();
-		}
-		catch (e) {
-			http_request = false;
-		}
-	}
-	if (!http_request && window.createRequest) {
-		try {
-			http_request = window.createRequest();
-		}
-		catch (e) {
-			http_request = false;
-		}
-	}
-	http_request.open('POST', '127.0.0.1:8085', true);
-	http_request.onreadystatechange = handleResponse;
-	http_request.setRequestHeader('Content-Type', 'text/plain');
-	http_request.send(command+"="+value);
-}
-
-function handleResponse() {
-	if (http_request.readyState == 4) {
-		if (http_request.status == 200) {
-			document.getElementById("contents-browse").innerHTML = http_request.responseText;
-		}
-		else {
-			alert('There was a problem with the request.'+ http_request.statusText);
-		}
-	}
-}
-
 

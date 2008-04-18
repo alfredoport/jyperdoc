@@ -1,3 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
 Copyright (c) 2007 Arthur C. Ralfs
 All rights reserved.
 
@@ -28,4 +31,32 @@ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN" "http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd" [
+<!ENTITY mathml "http://www.w3.org/1998/Math/MathML">
+<!ENTITY InvisibleTimes " ">
+]>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <head>
+    <title>FriCAS Interface</title>
+    <script type="text/javascript" src="friserver.js" />
+    <script type="text/javascript" src="tex2mml.js" />
+    <link type="text/css" rel="stylesheet" href="style.css" />
+  </head>
+  <body id="body" onload="putFocus();">
+    <div id='title' class='title'>FriCAS</div>
+    <hr/>
+    <div id="contents">
+      <div class="rootCompCell" onclick="javascript:showContext(event)">
+	<div class="command">
+	  <form>
+	    <input type="text" id="comm" class="inComm" name="command" onkeypress="keyPressed(event)" size="80" alt="" />
+	  </form>
+	</div>
+      </div>
+    </div>
+  </body>
+</html>
+
 
