@@ -1,5 +1,0 @@
-)set mes auto off
-)set out mathml on
-)lisp (load "http.lisp")
-)compile jyperdoc.spad
-axServer(8085, multiServ)$AXSERV
