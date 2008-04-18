@@ -2,8 +2,12 @@
 
   http://code.google.com/p/jyperdoc/
 
-* To obtain the source code, you will need subversion and type 
-the following command:
+You can report bugs at:
+
+  http://code.google.com/p/jyperdoc/issues/list
+
+* To obtain the source code, you will need to have subversion installed 
+and type the following command:
 
   svn checkout http://jyperdoc.googlecode.com/svn/trunk jyperdoc
 
