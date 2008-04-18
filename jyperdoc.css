@@ -98,6 +98,11 @@ textarea.cell_input_active {
   font-size: 21px;
 }
 
+a.inuse {
+
+  background-color: #1e90ff;
+}
+
 /***************
  * Title Section
  ***************/

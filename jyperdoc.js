@@ -1162,27 +1162,36 @@ function drag(elementToDrag, event){
 var appname = "JyperDoc";
 
 function init() {
-	
-	  displayTitle();
-		  menu();
+	displayTitle();
+	//menu();
 }
 
 function displayTitle() {
 	
-	  var banner = document.getElementById("banner");
-		  banner.innerHTML = "<img src='notebook.gif'/>" + appname;
+	var banner = document.getElementById("banner");
+	banner.innerHTML = "<img src='notebook.gif'/>" + appname;
 			
 }
 
 function menu() {
 	
 	  var menu = document.getElementById("menu");
-		  menu.innerHTML = "<div id='links'>" +
-				"<a href='jyperdoc.xhtml' onclick='interpreter();'>Use</a>" +
+
+	  var links = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');	
+		links.setAttribute('id','links');
+
+		var interp	= document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
+		interp.setAttribute('id','interpreter');
+	  //interp.setAttribute('class','nouse'); 
+		//interp.setAttribute('href','jyperdoc.xhtml');
+	  interp.setAttribute('onclick','markInUse(event);');
+		interp.appendChild(document.createTextNode('Use'));
+
+		/*
         "<a href='editor.xhtml'>Editor</a>" +
 				"<a href='man0page.xhtml'>Browse</a>" +
 				"<a href='topreferencepage.xhtml'>Reference</a>" +
-				/*"<select id='file' class='file'>" +
+				"<select id='file' class='file'>" +
 				  "<option value='file'>File...</option>" +
 				  "<option value='new'>New worksheet</option>" +
 				  "<option value='open'>Upload worksheet</option>" +
@@ -1192,22 +1201,41 @@ function menu() {
 				  "<option value='action'>Action...</option>" +
 				  "<option value='stack'>Stack Mode</option>" +
 				  "</select>" + */
-				"</div>";			
+		
+	  links.appendChild(interp);
+	  menu.appendChild(links);	
+}
+
+function markInUse(e) {
+
+	var targ = e.target;
+  document.getElementById(targ.id).setAttribute('class','inuse');
+  //link.style.background-color="#1e90ff";
 }
 
 function interpreter() {
-	  var contents = document.getElementById("contents");
-		  contents.innerHTML = "<div class='rootCompCell' onclick='javascript:showContext(event);' onkeyup='javascript:resize_textarea(event.target);'>" +
-				"<div class='command'>" +
-				"<textarea id='comm' " +
-				"class='cell_input' " +
-				"step='0' " +
-				"name='command' " +
-				"rows='1' " +
-				"cols='80' " +
-				"onkeypress='keyPressed(event);' " +
-				"onfocus='onFocus(event);'></textarea>" +
-				"</div></div>";
+
+  	var contents = document.getElementById("contents");
+		var rootcompcell = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+		rootcompcell.setAttribute('class','rootCompCell'); 
+		rootcompcell.setAttribute('onclick','javascript:showContext(event);');
+		rootcompcell.setAttribute('onkeyup','javascript:resize_textarea(event.target);');
+		
+		var command = document.createElementNS('http://www.w3.org/1999/xhtml','div');
+	  command.setAttribute('class','command');
+
+		var comm = document.createElementNS('http://www.w3.org/1999/xhtml','textarea');
+	  comm.setAttribute('id','comm');
+		comm.setAttribute('class','cell_input');
+		comm.setAttribute('name','command');
+		comm.setAttribute('rows','1');
+		comm.setAttribute('cols','80');
+		comm.setAttribute('onkeypress','keyPressed(event);');
+		comm.setAttribute('onfocus','onFocus(event);');
+		
+		command.appendChild(comm);
+		rootcompcell.appendChild(command);
+		contents.appendChild(rootcompcell);
 }
 
 function editor() {
