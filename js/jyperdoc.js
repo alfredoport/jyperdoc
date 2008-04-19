@@ -203,7 +203,7 @@ function readFromEditor() {
   // One gives the id of the textarea
   // and getCode gets the content of it.
   //writeToFile('casn.input',area.getCode());
-  //makeRequestServer('interpcall',')read casn.input');
+  makeRequestServer('command',area.getCode());
   
 }
 
@@ -257,12 +257,6 @@ function makeRequest(targ) {
     //http_request.send(checkCommand(removeOutput(command)));
     http_request.send(checkCommand(command));
 
-}
-
-function newRequest(targ) {
-
-  targ.value = checkCommand(command);
-  makeRequest(targ);
 }
 
 function removeOutput(command) {
@@ -1309,14 +1303,14 @@ function drag(elementToDrag, event){
 var appname = "JyperDoc";
 
 function init() {
-	displayTitle();
-	//menu();
+	displayTitle("<img src='notebook.gif'/>" + appname);
+	menu();
 }
 
-function displayTitle() {
+function displayTitle(title) {
 	
 	var banner = document.getElementById("banner");
-	banner.innerHTML = "<img src='notebook.gif'/>" + appname;
+	banner.innerHTML = title;
 			
 }
 
@@ -1324,32 +1318,30 @@ function menu() {
 	
 	  var menu = document.getElementById("menu");
 
-	  var links = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');	
+	  var links = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
 		links.setAttribute('id','links');
+		links.setAttribute('class','links');
 
-		var interp	= document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
+/*		var interp	= document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
 		interp.setAttribute('id','interpreter');
 	  //interp.setAttribute('class','nouse'); 
 		//interp.setAttribute('href','jyperdoc.xhtml');
-	  interp.setAttribute('onclick','markInUse(event);');
-		interp.appendChild(document.createTextNode('Use'));
+		interp.appendChild(document.createTextNode('Use '));
+*/
+		var editor  = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
+		editor.setAttribute('id','editor');
+		editor.setAttribute('href','javascript:void%200');
+    editor.setAttribute('onclick',"window.open('editor.xhtml')");
+		editor.appendChild(document.createTextNode('Editor '));
 
-		/*
-        "<a href='editor.xhtml'>Editor</a>" +
-				"<a href='man0page.xhtml'>Browse</a>" +
-				"<a href='topreferencepage.xhtml'>Reference</a>" +
-				"<select id='file' class='file'>" +
-				  "<option value='file'>File...</option>" +
-				  "<option value='new'>New worksheet</option>" +
-				  "<option value='open'>Upload worksheet</option>" +
-				  "<option value='save'>Save worksheet</option>" +
-			    "</select>" +
-				  "<select id='action' class='action'>" +
-				  "<option value='action'>Action...</option>" +
-				  "<option value='stack'>Stack Mode</option>" +
-				  "</select>" + */
-		
-	  links.appendChild(interp);
+		var browser  = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
+		browser.setAttribute('id','browser');
+		browser.setAttribute('onclick',"window.open('man0page.xhtml')");
+		browser.appendChild(document.createTextNode('Browse'));
+								
+	  //links.appendChild(interp);
+	  links.appendChild(editor);
+	  //links.appendChild(browser);
 	  menu.appendChild(links);	
 }
 
