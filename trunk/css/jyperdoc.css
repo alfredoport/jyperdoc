@@ -48,7 +48,7 @@ textarea.cell_input_active {
  **********************/
 
 #menu{
-  height: 24px;
+  height: 20px;
 
   /*Another Menu*/
   /*border-left: 3px solid #1e90ff;
@@ -66,7 +66,7 @@ textarea.cell_input_active {
 #links {
   margin: 0px;
   padding: 0px;
-  font-size: 21px;
+  font-size: 18px;
 }
 
 #links a:link, #links a:visited {
@@ -95,12 +95,7 @@ textarea.cell_input_active {
   background-color: #1e90ff;
   /*font-weight: bold;*/
   text-decoration: none;
-  font-size: 21px;
-}
-
-a.inuse {
-
-  background-color: #1e90ff;
+  /*font-size: 21px;*/
 }
 
 /***************
