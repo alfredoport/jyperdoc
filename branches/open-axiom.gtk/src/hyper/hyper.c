@@ -200,7 +200,7 @@ main(int argc, char **argv)
     gIsEndOfOutput = 1;
 
 /*    fprintf(stderr,"hyper:main:calling  check_arguments\n");*/
-    /*FIXME:check_arguments();*/
+    check_arguments();
 /*    fprintf(stderr,"hyper:main:returned check_arguments\n");*/
 
     /*
