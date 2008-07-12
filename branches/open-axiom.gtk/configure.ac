@@ -1,6 +1,6 @@
 sinclude(config/open-axiom.m4)
 sinclude(config/aclocal.m4)
-AC_INIT([OpenAxiom], [1.2.0-2008-07-10], 
+AC_INIT([OpenAxiom], [1.2.0-2008-07-04], 
         [open-axiom-bugs@lists.sf.net])
 
 AC_CONFIG_AUX_DIR(config)
@@ -497,6 +497,11 @@ AC_CHECK_HEADER([regex.h],
                 [openaxiom_host_has_regex=yes],
                 [openaxiom_host_has_regex=no])
 AC_SUBST(openaxiom_host_has_regex)
+
+PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.4)
+AC_SUBST(GTK_CFLAGS)
+AC_SUBST(GTK_LIBS)
+
 
 axiom_host_has_libbfd=
 ## Check for these only if we are going to build GCL from source.
