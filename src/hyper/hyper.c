@@ -3,8 +3,10 @@
   All rights reserved.
   Copyright (C) 2007-2008, Gabriel Dos Reis.
   All rights reserved.
+  Copyright (C) 2008, Alfredo Portes.
+  All rights reserved.
 
-  Redistribution and use in source and binary forms, with or without
+	Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are
   met:
 
@@ -47,7 +49,7 @@
 
 #include "debug.h"
 
-#include "sockio.h"
+/*FIXME: #include "sockio.h"*/
 #include "hyper.h"
 #include "lex.h"
 
@@ -55,7 +57,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <setjmp.h>
-#include <X11/cursorfont.h>
 
 #include "keyin.h"
 #include "initx.h"
@@ -64,7 +65,7 @@
 #include "bsdsignal.h"
 
 #include "all_hyper_proto.H1"
-#include "sockio.h"
+/*FIXME: #include "sockio.h"*/
 
 /*
  * Here is a flag used to tell me whether I made a good connection to the
@@ -79,7 +80,7 @@ int MenuServerOpened = 1;
 
 /* X11 display and screen variables */
 
-Display *gXDisplay;
+GdkDisplay *gXDisplay;
 int      gXScreenNumber;
 
 /*
@@ -117,7 +118,7 @@ int gmake_record_file= 0;       /* true when making record files from ht */
 int gverify_record_file = 0;    /* true when verifying record files from ht */
 int gverify_dates = 0;          /* true when we want hypertex to verify ht.db dates */
 
-openaxiom_sio *session_server; /* socket connecting to session manager */
+/*FIXME: openaxiom_sio *session_server;*/ /* socket connecting to session manager */
 
 int gIsAxiomServer = 0;        /* true iff HyperDoc is acting as a   */
                                 /* an Axiom server */
@@ -178,7 +179,7 @@ clean_socket(void )
 {
     char name[256];
 
-    make_server_name(name, MenuServerName);
+    /*FIXME: make_server_name(name, MenuServerName);*/
     unlink(name);
 }
 
@@ -199,25 +200,25 @@ main(int argc, char **argv)
     gIsEndOfOutput = 1;
 
 /*    fprintf(stderr,"hyper:main:calling  check_arguments\n");*/
-    check_arguments();
+    /*FIXME:check_arguments();*/
 /*    fprintf(stderr,"hyper:main:returned check_arguments\n");*/
 
     /*
      * initialize the hash tables for the files and the windows and images
      */
 /*    fprintf(stderr,"hyper:main:calling  init_hash\n");*/
-    init_hash();
+    /*FIXME:init_hash();*/
 /*    fprintf(stderr,"hyper:main:returned init_hash\n");*/
 
     /*
      * initialize the parser keyword hash table
      */
 /*    fprintf(stderr,"hyper:main:calling  parser_init\n");*/
-    parser_init();
+    /*FIXME:parser_init();*/
 /*    fprintf(stderr,"hyper:main:returned parser_init\n");*/
 
 /*    fprintf(stderr,"hyper:main:calling  read_ht_db\n");*/
-    read_ht_db(&init_page_hash, &init_macro_hash, &init_patch_hash);
+    /*FIXME:read_ht_db(&init_page_hash, &init_macro_hash, &init_patch_hash);*/
 /*    fprintf(stderr,"hyper:main:returned read_ht_db\n");*/
 
     /*
@@ -228,7 +229,7 @@ main(int argc, char **argv)
 
     if (!make_input_file && !gmake_record_file && !gverify_record_file) {
 /*        fprintf(stderr,"hyper:main:calling  initializeWindowSystem\n");*/
-        initializeWindowSystem();
+        /*FIXME:initializeWindowSystem();*/
 /*        fprintf(stderr,"hyper:main:returned initializeWindowSystem\n");*/
 
         /*
@@ -236,7 +237,7 @@ main(int argc, char **argv)
          * routines
          */
 /*        fprintf(stderr,"hyper:main:calling  init_keyin\n");*/
-        init_keyin();
+        /*FIXME:init_keyin();*/
 /*        fprintf(stderr,"hyper:main:returned init_keyin\n");*/
 
         /*
@@ -245,7 +246,7 @@ main(int argc, char **argv)
          */
 
 /*        fprintf(stderr,"hyper:main:calling  init_top_window\n");*/
-        ret_status = init_top_window("RootPage");
+        /*FIXME: ret_status = init_top_window("RootPage");*/
 /*        fprintf(stderr,"hyper:main:returned init_top_window\n");*/
         gParentWindow = gWindow;
         if (ret_status == -1) {
@@ -279,13 +280,13 @@ main(int argc, char **argv)
          */
 /*        fprintf(stderr,"hyper:main:in else case\n");*/
 /*        fprintf(stderr,"hyper:main:calling  make_server_connections\n");*/
-        make_server_connections();
+        /*FIXME: make_server_connections();*/
 /*        fprintf(stderr,"hyper:main:returned make_server_connections\n");*/
 
 
-        if (make_input_file) ht2_input();
+        /*FIXME: if (make_input_file) ht2_input();
         if (gmake_record_file) make_record();
-        if (gverify_record_file) verify_record();
+        if (gverify_record_file) verify_record();*/
         exit(0);
     }
 
@@ -294,12 +295,12 @@ main(int argc, char **argv)
      * gIsAxiomServer and the routine fails, it will exit for me
      */
 /*    fprintf(stderr,"hyper:main:calling  make_server_connections\n");*/
-    make_server_connections();
+    /*FIXME: make_server_connections();*/
 /*    fprintf(stderr,"hyper:main:returned make_server_connections\n");*/
 
 
 /*    fprintf(stderr,"hyper:main:calling  mainEventLoop\n");*/
-    mainEventLoop();
+    /*FIXME: mainEventLoop();*/
 /*    fprintf(stderr,"hyper:main:returned mainEventLoop\n");*/
 
     return 0;
@@ -393,16 +394,16 @@ check_arguments(void)
   }
 }
 
-static void
+/*FIXME: static void
 make_server_connections(void)
 {
     int i, wait_time;
 
-    /*
+    *//*
      * Try to open the menuserver socket, if I can not, then set a flag
      */
 
-    if (open_server(MenuServerName) == -2) {
+    /*if (open_server(MenuServerName) == -2) {
         fprintf(stderr, "(HyperDoc) Warning: Not connected to OpenAxiom Server!\n");
         MenuServerOpened = 0;
     } else {
@@ -411,14 +412,14 @@ make_server_connections(void)
     }
 
 
-    /*
+    *//*
      * If I have opened the MenuServer socket, then I should also try to open
      * the SpadServer socket, so I can send stuff right to SPAD.
      */
 
-    if (MenuServerOpened) {
+    /*if (MenuServerOpened) {
 
-        /*
+    */    /*
          * If I am a ht server, then I should not continue on unless I
          * establish some sort of connection
          */
@@ -429,7 +430,7 @@ make_server_connections(void)
          * gives up and exits.
          */
 
-        if (!gIsAxiomServer)
+        /*if (!gIsAxiomServer)
             wait_time = 2;
         else
             wait_time = 1000;
@@ -453,11 +454,11 @@ make_server_connections(void)
         }
         else {
 
-            /*
+            *//*
              * Do the same thing for the SessionServer
              */
 
-            for (i = 0, session_server = NULL; i < 2 && session_server == NULL
+            /*for (i = 0, session_server = NULL; i < 2 && session_server == NULL
                  ; i++) {
                 session_server =
                     connect_to_local_server(SessionServer, MenuServer,
@@ -482,4 +483,4 @@ make_server_connections(void)
             }
         }
     }
-}
+}*/
