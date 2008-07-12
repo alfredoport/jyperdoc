@@ -64,12 +64,15 @@ HEADERS = display.h event.h extent.h node.h \
 
 build_libdir = $(top_builddir)/src/lib
 
-hypertex_SOURCES = addfile.c cond.c dialog.c display.c event.c extent1.c \
-		extent2.c form-ext.c group.c \
-		htinp.c hyper.c initx.c input.c item.c keyin.c lex.c \
-		macro.c mem.c parse.c parse-aux.c parse-input.c \
-		parse-paste.c parse-types.c ReadBitmap.c scrollbar.c \
-		show-types.c spadint.c titlebar.c
+#hypertex_SOURCES = addfile.c cond.c dialog.c display.c event.c extent1.c \
+#		extent2.c form-ext.c group.c \
+#		htinp.c hyper.c initx.c input.c item.c keyin.c lex.c \
+#		macro.c mem.c parse.c parse-aux.c parse-input.c \
+#		parse-paste.c parse-types.c ReadBitmap.c scrollbar.c \
+#		show-types.c spadint.c titlebar.c
+
+hypertex_SOURCES = hyper.c 
+
 
 libspad_la = -L$(build_libdir) -lspad
 

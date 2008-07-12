@@ -43,9 +43,10 @@
 #  include <X11/Xlib.h>
 #  include <X11/Xutil.h>
 #  include <X11/Xos.h>
-typedef Window openaxiom_window;
-typedef Pixmap openaxiom_pixmap;
-typedef XImage openaxiom_image;
+#  include <gtk/gtk.h>
+typedef GdkWindow openaxiom_window;
+typedef GdkPixmap openaxiom_pixmap;
+typedef GdkImage openaxiom_image;
 typedef GC openaxiom_graphic_context;
 typedef XFontStruct openaxiom_font;
 typedef Cursor openaxiom_cursor;
@@ -265,7 +266,7 @@ typedef struct HyperDocPage {
    TextNode *header;             /* formatted version of page               */
    TextNode *scrolling;          /* Top of scrolling region                 */
    TextNode *footer;             /* top of non-scrolling region at bottom   */
-   openaxiom_sio *sock;          /* socket connection for spad buffer       */
+   /*FIXME: openaxiom_sio *sock;*/          /* socket connection for spad buffer       */
    HashTable *fLinkHashTable;         /* active link hash table                  */
    ButtonList *s_button_list;    /* active buttons on page                  */
    ButtonList *button_list;      /* active buttons on page                  */
