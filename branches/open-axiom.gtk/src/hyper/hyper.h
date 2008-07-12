@@ -3,6 +3,8 @@
   All rights reserved.
   Copyright (C) 2007-2008, Gabriel Dos Reis.
   All rights reserved.
+  Copyright (C) 2008, Alfredo Portes.
+	All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are
@@ -78,6 +80,7 @@ extern int  gActiveColor,
 
 /* These are all the different fonts one can use in HyperDoc. */
 
+/*FIXME:
 extern XFontStruct  *gActiveFont,
                     *gAxiomFont,
                     *gBfFont,
@@ -89,19 +92,32 @@ extern XFontStruct  *gActiveFont,
                     *gTitleFont,
                     *gTtFont;
 
-
+*/
 #endif
 
 #ifndef HTADD
 /* From hyper.c */
 extern int      gXScreenNumber;
-extern Display *gXDisplay;
+
+/* GdkDisplay objects purpose are two fold:
+ *
+ *     To grab/ungrab keyboard focus and mouse pointer
+ * 	   To manage and provide information about the GdkScreen(s) available for this GdkDisplay
+ *
+ * GdkDisplay objects are the GDK representation of the X Display which can be described 
+ * as a workstation consisting of a keyboard a pointing device (such as a mouse) and one 
+ * or more screens. It is used to open and keep track of various GdkScreen objects 
+ * currently instanciated by the application. It is also used to grab and release the 
+ * keyboard and the mouse pointer.
+ */
+extern GdkDisplay *gXDisplay;
+
 extern int gSwitch_to_mono;
 extern unsigned long * spadColors;
 extern int gIsEndOfOutput;
 extern HDWindow *gWindow;
-extern openaxiom_sio *session_server;
-extern openaxiom_sio *spad_socket;
+/*FIXME: extern openaxiom_sio *session_server; */
+/*FIXME: extern openaxiom_sio *spad_socket; */
 extern HashTable gFileHashTable;
 extern HashTable gImageHashTable;           /* A global hash table for images */
 extern openaxiom_cursor gNormalCursor; /* The normal mouse cursor. */
