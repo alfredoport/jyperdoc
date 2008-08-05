@@ -1,0 +1,6 @@
+2008-08-04 Alfredo Portes <doyenatccny@gmail.com>
+	
+	* axserver/axserver.spad: OpenAxiom does not support ^= anymore.
+	  Use documented ~= operator. MathML output works with OpenAxiom now.
+
+

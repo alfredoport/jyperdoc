@@ -78,7 +78,7 @@ AxiomServer: public == private where
         char:String
 
        -- read in the http headers
-       -- while (char := STRING(READ_-CHAR_-NO_-HANG(s,NIL$Lisp,'EOF)$Lisp)$Lisp) ^= "EOF" and char ^= "NIL" repeat
+       -- while (char := STRING(READ_-CHAR_-NO_-HANG(s,NIL$Lisp,'EOF)$Lisp)$Lisp) ~= "EOF" and char ~= "NIL" repeat
        --   headers := concat [headers,char]
        --   WriteLine$Lisp "Char: "char
 
@@ -296,7 +296,7 @@ AxiomServer: public == private where
 --     pathvar := concat [ "/home/alfredo/Projects/Jyper/", pathvar ]
      WriteLine$Lisp concat ["getFile: ",pathvar]
      params:=split(pathvar,char "?")
-     if #params ^= 1
+     if #params ~= 1
        then
          pathvar := first params
      if not null? PATHNAME_-NAME(PATHNAME(pathvar)$Lisp)$Lisp 
@@ -343,7 +343,7 @@ AxiomServer: public == private where
     sourcefile:=getDatabase(c, "SOURCEFILE")
     description:=getDescription(c)
     constructor:String:=""
-    if sourcefile ^= "NIL"
+    if sourcefile ~= "NIL"
       then  
         constructor:=concat [ constructor, "<?xml version='1.0' encoding='ISO-8859-1' ?>"_
                                  "<constructor>"_
@@ -724,7 +724,7 @@ AxiomServer: public == private where
 -- and we're starting numbering over
       if hisLength = 0 then SETQ(stepSav$Lisp, 0$Lisp)$Lisp
       if hisLength > 0 and
-        CAR(CAR(_$internalHistoryTable$Lisp)$Lisp)$Lisp ^= stepSav$Lisp then
+        CAR(CAR(_$internalHistoryTable$Lisp)$Lisp)$Lisp ~= stepSav$Lisp then
           SETQ(stepSav$Lisp, CAR(CAR(_$internalHistoryTable$Lisp)$Lisp)$Lisp)$Lisp
           while count < length  repeat
               position(char "%",string FIRST(first$Lisp)$Lisp) = 2 => count := length+1
