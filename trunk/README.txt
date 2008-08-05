@@ -6,6 +6,14 @@ You can report bugs at:
 
   http://code.google.com/p/jyperdoc/issues/list
 
+REQUIREMENTS
+
+* Currently jyperdoc works only if you are using GCL. Other Lisps could
+  probably be used in the future if a proper socket framework is developed
+  for the different flavors of AXIOM.
+
+USE
+
 * To obtain the source code, you will need to have subversion installed 
   and type the following command:
 
