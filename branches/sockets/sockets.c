@@ -1,6 +1,6 @@
 #include "sockets.h"
 
-openaxiom_socket_sio server;
+openaxiom_sio *server;
 
 static void
 openaxiom_load_socket_module()
@@ -81,33 +81,33 @@ int
 open_tcp_server(const char* server_name, int port, int purpose)
 {
   /* create the socket internet socket */
-  server.socket = openaxiom_communication_link(AF_INET);
-  if (is_invalid_socket(&server[0])) {
-    server[0].socket = 0;
+  server->socket = openaxiom_communication_link(AF_INET);
+  if (is_invalid_socket(&server)) {
+    server->socket = 0;
   } else {
-    server.addr.i_addr.sin_family = AF_INET;
-    memset(server.addr.u_addr.sa_data, 0,
-           sizeof(server[0].addr.u_addr.sa_data));
-    strcpy(server.addr.u_addr.sa_data, "tcp");
+    server->addr.i_addr.sin_family = AF_INET;
+    memset(server->addr.u_addr.sa_data, 0,
+           sizeof(server->.addr.u_addr.sa_data));
+    strcpy(server->addr.u_addr.sa_data, "tcp");
     server.addr.i_addr.sin_addr.s_addr = INADDR_ANY;
     server.addr.i_addr.sin_port = htons(port);
-    if (bind(server.socket, &server[0].addr.i_addr,
-             sizeof(server.addr.i_addr))) {
+    if (bind(server->socket, &server->.addr.i_addr,
+             sizeof(server->addr.i_addr))) {
       perror("binding INET stream socket");
       server[0].socket = 0;
       return -1;
     }
     int length = sizeof(server.addr.i_addr);
-    if (getsockname(server.socket, &server.addr.i_addr, &length)) {
+    if (getsockname(server->socket, &server->addr.i_addr, &length)) {
       perror("getting INET server socket name");
-      server.socket = 0;
+      server->socket = 0;
       return -1;
     }
 
-    FD_SET(server.socket, &socket_mask);
-    FD_SET(server.socket, &server_mask);
+    FD_SET(server->socket, &socket_mask);
+    FD_SET(server->socket, &server_mask);
 
-    listen(server[0].socket,5);
+    listen(server->socket,5);
     server->purpose = purpose;
   }
 
