@@ -12,6 +12,9 @@ public:
     qhyper(QWidget *parent = 0);
     ~qhyper();
 
+protected:
+
+
 private:
     Ui::qhyperClass ui;
 };
