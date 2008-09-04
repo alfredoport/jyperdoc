@@ -8,17 +8,37 @@
 #ifndef SOCKETS_H_
 #define SOCKETS_H_
 
-#ifdef __MINGW32__
-  #include <winsock2.h>
-  #include <windows.h>
-  typedef SOCKET openaxiom_socket;
+/**
+ * Include Files.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "open-axiom.h"
+
+#ifdef __MINGW32__	/* If we are building in Windows */
+	#include <winsock2.h>
+	#include <windows.h>
 #else
-  typedef int openaxiom_socket;
-  #include <sys/socket.h>
+	#include <sys/socket.h>
+	#include <sys/types.h>
+	#include <fcntl.h>
+	#include <netinet/in.h>
+	#include <errno.h>
+#endif
+
+/**
+ * Variable Declarations.
+ */
+#ifdef __MINGW32__
+	typedef SOCKET openaxiom_socket;
+#else
+	typedef int openaxiom_socket;
 #endif
 
 #define BufSize         4096    /* size of communication buffer */
-#define MaxClients      150
+#define MaxClients      150		/* Maximum number of clients */
 
 /**
  *
@@ -38,12 +58,21 @@ typedef struct openaxiom_sio {
   size_t nbytes_pending;   /* pending bytes for read.  */
 } openaxiom_sio;
 
+/**
+ *
+ */
 typedef struct sock_list {      /* linked list of Sock */
   	openaxiom_sio Socket;
   	struct sock_list *next;
 } Sock_List;
 
-int open_tcp_server(const char*, int, int);
-void setnonblocking(void);
+/**
+ *
+ */
+OPENAXIOM_EXPORT int open_tcp_server(const char*, int);
+OPENAXIOM_EXPORT void setnonblocking(void);
+OPENAXIOM_EXPORT void init_socks(void);
+OPENAXIOM_EXPORT int sselect(int, fd_set*, fd_set*, fd_set*, void*);
+OPENAXIOM_EXPORT void openaxiom_close_socket(openaxiom_socket);
 
 #endif /* SOCKETS_H_ */
