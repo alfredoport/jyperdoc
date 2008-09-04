@@ -5,6 +5,7 @@
 
 int main(int argc, char *argv[])
 {
+	// Start of our application
     QApplication a(argc, argv);
     qhyper w;
     w.show();
