@@ -87,25 +87,25 @@ open_tcp_server(const char* server_name, int port, int purpose)
   } else {
     server->addr.i_addr.sin_family = AF_INET;
     memset(server->addr.u_addr.sa_data, 0,
-           sizeof(server->.addr.u_addr.sa_data));
+           sizeof(server->addr.u_addr.sa_data));
     strcpy(server->addr.u_addr.sa_data, "tcp");
-    server.addr.i_addr.sin_addr.s_addr = INADDR_ANY;
-    server.addr.i_addr.sin_port = htons(port);
-    if (bind(server->socket, &server->.addr.i_addr,
+    server->addr.i_addr.sin_addr.s_addr = INADDR_ANY;
+    server->addr.i_addr.sin_port = htons(port);
+    if (bind(server->socket, &server->addr.i_addr,
              sizeof(server->addr.i_addr))) {
       perror("binding INET stream socket");
       server[0].socket = 0;
       return -1;
     }
-    int length = sizeof(server.addr.i_addr);
+    int length = sizeof(server->addr.i_addr);
     if (getsockname(server->socket, &server->addr.i_addr, &length)) {
       perror("getting INET server socket name");
       server->socket = 0;
       return -1;
     }
 
-    FD_SET(server->socket, &socket_mask);
-    FD_SET(server->socket, &server_mask);
+    /*FD_SET(server->socket, &socket_mask);
+    FD_SET(server->socket, &server_mask);*/
 
     listen(server->socket,5);
     server->purpose = purpose;
