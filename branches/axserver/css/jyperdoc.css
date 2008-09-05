@@ -1,0 +1,270 @@
+/*****************************
+ * Style information for the
+ * "contents" <div> section.
+ *
+ *****************************/
+
+#contents {
+  border: 1px solid #a8a8a8;
+  /*background-color: #cccccc;*/
+}
+
+#contents a {
+
+  display: none;
+}
+
+textarea.cell_input {
+
+  font-family: monospace;
+  font-size:12pt;
+  padding-left:5px;
+  padding-top:5px;
+  width: 99%;
+  margin-bottom:1px;
+  margin-top:1px;
+  /*line-height:1.2em;*/
+  margin-left:2px;
+  border: solid 1px #CCCCCC;
+}
+
+textarea.cell_input_active {
+
+  font-family: monospace;
+  font-size:12pt;
+  padding-left:5px;
+  padding-top:5px;
+  width: 99%;
+  margin-bottom:1px;
+  margin-top:1px;
+  /*line-height:1.2em;*/
+  margin-left:2px;
+  border: solid 1px #0000FF;
+
+}
+
+/**********************
+ * Top Level Menu
+ **********************/
+
+#menu{
+  height: 20px;
+
+  /*Another Menu*/
+  /*border-left: 3px solid #1e90ff;
+  border-right: 3px solid #1e90ff;
+  border-bottom: 3px solid #1e90ff;
+  border-top: 3px solid #1e90ff;*/ 
+
+  width: 100%;
+  border-top: 3px solid #1e90ff;
+  font: Verdana,sans-serif;
+  background-color: #DDEEFF;
+  margin-bottom: 1px;
+}
+
+#links {
+  margin: 0px;
+  padding: 0px;
+  font-size: 18px;
+}
+
+#links a:link, #links a:visited {
+  /*display: block;*/
+  /*border-top: 1px solid #ffffff;*/
+  /*border-bottom: 1px solid #ffffff;*/
+  /*border-right: 3px solid #1e90ff;*/
+  /*border-left: 1px solid #ffffff;*/
+  /*font-weight: bold;*/
+  padding: 0px 10px 0px 10px;
+  color: #000000;
+  text-decoration: none;
+}
+
+#links select {
+
+  margin-right: 5px;
+  margin-left: 5px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  width: 75px;
+}
+
+#links a:hover {
+  /*border-top: 1px solid #cccccc;*/
+  background-color: #1e90ff;
+  /*font-weight: bold;*/
+  text-decoration: none;
+  /*font-size: 21px;*/
+}
+
+/***************
+ * Title Section
+ ***************/
+
+div.banner {
+
+  font-size: 22px;
+  border-top: 1px solid #ffffff;
+  /*border-bottom: 1px solid #ffffff;*/
+  border-right: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  /*background-color: #DDEEFF;*/
+  font-weight: bold;
+  width: 300px;
+  
+}
+
+div.banner img {
+
+  width: 22px;
+  height: 22px;
+}
+
+/***************
+ * Vertical Menu
+ ***************/
+
+#vlinks {
+  margin: 0px;
+  padding: 0px;
+  font-size: 18px;
+  float: left;
+
+}
+
+#vlinks a:link, #vlinks a:visited {
+  /*display: block;*/
+  /*border-top: 1px solid #ffffff;*/
+  /*border-bottom: 1px solid #ffffff;*/
+  /*border-right: 1px solid #ffffff;
+   *border-left: 1px solid #ffffff;*/
+  /*font-weight: bold;*/
+  color: #000000;
+  text-decoration: none;
+}
+
+#vlinks a:hover {
+  /*border-top: 1px solid #cccccc;*/
+  /*background-color: #0000ff;*/
+  /*font-weight: bold;*/
+  text-decoration: underline;
+}
+
+#vlinks td.left {
+
+    background-color: #DDEEFF;
+
+}
+
+#vlinks td.right {
+    padding-left: 15px;
+}
+
+
+/*****************
+ * MathML Output
+ *****************/
+
+div.inout {
+  margin-bottom: 10px;
+}
+
+div.stepnum {
+  display: none;
+}
+
+div.command {
+
+  /*border: solid 1px #FFFFFF;*/
+  /*color: #FF0000;
+   *padding-bottom: 10px;*/
+}
+
+div.algebra {
+  /*border: solid 1px #FFFFFF;*/
+  color: #0000FF;
+  padding-bottom: 10px;
+}
+
+div.mathml {
+  /*border: solid 1px #FFFFFF;*/
+  color: #0000FF;
+  padding-bottom: 10px;
+  overflow: auto;
+}
+
+div.type {
+  /*border: solid 1px #FFFFFF;*/
+  color: #0000FF;
+  padding-bottom: 10px;
+}
+
+.hide {
+  display: none;
+}
+
+input.showbranch {
+  background-color: white;
+  /*border-width: 2px;*/
+  /*border-style: outset;*/
+}
+
+.context-menu {
+  background-color: white;
+  /*border: outset 4px silver;*/
+  padding: 0px;
+  margin: 0px;
+}
+
+div.context-menu div:first-child {
+
+}
+
+div.context-menu div.context-item {
+  cursor: pointer;
+  margin-top: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+div.context-menu div.menuId {
+  margin-top: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+table.idTable td {
+  /*  border: solid 1px blue; */
+}
+
+div.active {
+  background-color: yellow;
+}
+
+/**************************
+ * Editor style information
+ **************************/
+
+div.contents-editor {
+
+  border: solid 1px #CCCCCC;
+  width: 99%;
+  /*height: 150px;*/
+  margin-bottom: 5px;
+  margin-left: 5px;
+}
+
+div.buttons button {
+
+  width: 75px;
+  height: 25px;
+  margin-left: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+div.editor textarea {
+
+  width: 99%;
+}

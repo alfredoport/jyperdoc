@@ -1,0 +1,3 @@
+getFile(s:Integer,pathvar:String):Void ==
+  if readable? pathvar then
+    contentType:String := pathvar

@@ -1,0 +1,163 @@
+)abbrev package AXSERV AxiomServer
+AxiomServer: public == private where
+
+ public == with
+
+  axServer: Integer -> Void
+
+ private == add
+
+  getFile: String -> String
+  multiServ: String -> String
+  getContentType: String -> String
+  makeErrorPage: String -> String
+  outputToSocket: (Integer,String,String) -> Void
+  getRequest: String -> String
+  getRequestGET: String -> String
+
+-- The axServer function handles the socket connection on the given port.
+-- When it gets a input on the socket it calls the server
+-- function on the socket input.
+
+  axServer(port:Integer):Void ==
+--    WriteLine("socketServer")$Lisp
+    s := openTcpServer("test",port,1)$Lisp
+    i:Integer := 1
+    j:Integer := 1
+    headers:String := ""
+    while (i > 0) repeat
+
+      --if not null?(tcpListen(s)$Lisp)$SExpression then
+      w:Integer := acceptTcpConnection()$Lisp
+
+      while (j > 0) repeat
+
+        line:String := readTcpSocket(w)$Lisp
+        if #line = 2 then
+          j := 0
+        else
+          headers := concat [ headers, line ]
+
+      response:String := multiServ(headers)
+      reqtype:String := getRequest(headers)
+      getrequest:String := getRequestGET(headers)
+ 
+      outputToSocket(w,response,getContentType(getrequest))
+
+      j := 1
+      headers := ""
+
+-- The multiServ function parses the socket input.
+-- It expects either a GET or POST request.
+-- A GET request fetches a new page, calling ``getFile''.
+-- A POST request starts with
+-- \begin{itemize}
+-- \item ``command='' which expects axiom interpreter commands.
+--       When this is recognized we call the ``getCommand'' function.
+-- \item ``lispcall='' which expects lisp interpreter input
+--       When this is recognized we call the ``getLisp'' function.
+-- \end{itemize}
+
+  multiServ(headers:String):Void ==
+    reqtype:String := getRequest(headers)
+    content:String := ""
+    if reqtype = "GET" then
+      content := getFile(getRequestGET(headers))    
+    content
+
+  getRequest(headers:String):String ==
+    params := split(headers, char " ")
+    reqtype:String := first params
+    reqtype
+
+  getRequestGET(reqtype:String):String ==
+    request:String := first rest split(reqtype, char " ")
+    request
+
+  makeErrorPage(msg:String):String ==
+     page:String:="<!DOCTYPE html PUBLIC "
+     page:=page "_"-//W3C//DTD XHTML 1.0 Strict//EN_" "
+     page:=page "_"http://www.w3.org/TR/xthml1/DTD/xhtml1-strict.dtd_">"
+     page:=page "<html xmlns=_"http://www.w3.org/1999/xhtml_">"
+     page:=page "<head><title>Error</title></head><body>" msg "</body></html>"
+--     WriteLine(page)$Lisp
+     page
+
+-- Given a socket and the URL of the file we create an input stream
+-- that contains the file. If the filename contains a question mark
+-- then we need to parse the parameters and dynamically construct the
+-- file contents.
+
+  getFile(pathvar:String):Void ==
+    params := split(pathvar, char "?")
+    if #params ~= 1 then
+      pathvar:String := first params
+
+    fn:FileName := pathvar::FileName
+    ext:String := extension fn
+    contentType:String := getContentType(ext)
+
+    content:String := ""
+    if readable? fn then
+       --fn:FileName:=filename("","casn","input")
+       --f:TextFile:=open(fn,"output")
+      f:TextFile := open(fn,"input")
+      
+      while not endOfFile? f repeat
+        line := readLine! f
+        conc:String := line::String
+        nl:String:=STRING(NewLine$Lisp)$Lisp -- Find a better way.
+        content := concat [ content, conc , nl]
+      close! f
+    else
+      content := makeErrorPage("Could not open the file.")
+    content
+
+-- We have ``s'' which is the socket, ``filestream'' which is the text of
+-- the file to output, and ``contentType'' which is the HTML Content-Type.
+-- We construct the HTML header information according to the standard and
+-- prepend it to the file. The resulting string is output to the socket.
+
+  outputToSocket(s:Integer,filestream:String,contentType:String):Void ==
+     filelength:String := string(#filestream)
+     file:String := ""
+     nl:String := STRING(NewLine$Lisp)$Lisp
+     file := concat ["Content-Length: ",filelength,nl,nl,file]
+     file := concat ["Connection: close",nl,file]
+     file := concat ["Content-Type: ",contentType,nl,file]
+     file := concat ["HTTP/1.1 200 OK",nl,file]
+     file := concat [file,filestream]
+     r:Integer := writeTcpSocket(s,file,#file)$Lisp
+
+  getContentType(pathvar:String):String ==
+
+    fn:FileName := pathvar::FileName
+    ext:String := extension fn
+
+    -- set default content type
+    contentType:String := "text/plain"
+
+    -- test for extensions: html, htm, xml, xhtml, js, css
+    if ext = "html" then
+      contentType := "text/html"
+    else if ext = "htm" then
+      contentType := "text/htm"
+    else if ext = "xml" then
+      contentType := "application/xml"
+    else if ext = "xhtml" then
+      contentType := "application/xhtml+xml"
+    else if ext = "js" then
+      contentType := "application/javascript"
+    else if ext = "css" then
+      contentType := "text/css"
+    else if ext = "png" then
+      contentType := "image/png"
+    else if ext = "jpg" then
+      contentType := "image/jpeg"
+    else if ext = "jpeg" then
+      contentType := "image/jpeg"
+    else if ext = "gif" then
+      contentType := "image/gif"
+    else if ext = "txt" then
+	  contentType := "text/plain"
+    contentType

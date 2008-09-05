@@ -1,0 +1,60 @@
+2743                (MAKEPROP '|AxiomServer| '|infovec|
+                        (LIST '#(NIL NIL NIL NIL NIL NIL (|List| $)
+                                 (|String|) (0 . |concat|) (|Void|)
+                                 (|Integer|) |AXSERV;axServer;IV;1|
+                                 (|Character|) (5 . |char|)
+                                 (10 . |split|) (16 . |elt|)
+                                 (|Boolean|) (|NonNegativeInteger|)
+                                 (22 . ~=) (|FileName|) (28 . |coerce|)
+                                 (33 . |extension|) (38 . |readable?|)
+                                 (|TextFile|) (43 . |open|)
+                                 (49 . |endOfFile?|) (54 . |not|)
+                                 (59 . |readLine!|) (64 . |close!|))
+                              '#(|axServer| 69) 'NIL
+                              (CONS (|makeByteWordVec2| 1 'NIL)
+                                    (CONS '#()
+                                     (CONS '#()
+                                      (|makeByteWordVec2| 28
+                                       '(1 7 0 6 8 1 12 0 7 13 2 7 6 0
+                                         12 14 2 7 0 0 0 15 2 17 16 0 0
+                                         18 1 19 0 7 20 1 19 7 0 21 1
+                                         19 16 0 22 2 23 0 19 7 24 1 23
+                                         16 0 25 1 16 0 0 26 1 23 7 0
+                                         27 1 23 0 0 28 1 0 9 10 11)))))
+                              '|lookupComplete|))
+(SETQ |$CategoryFrame|
+      (|put| '|AxiomServer| '|isFunctor|
+             '(((|axServer| ((|Void|) (|Integer|))) T (ELT $ 11)))
+             (|addModemap| '|AxiomServer| '(|AxiomServer|)
+                 '((CATEGORY |package|
+                       (SIGNATURE |axServer| ((|Void|) (|Integer|)))))
+                 T '|AxiomServer|
+                 (|put| '|AxiomServer| '|mode|
+                        '(|Mapping|
+                             (CATEGORY |package|
+                                 (SIGNATURE |axServer|
+                                     ((|Void|) (|Integer|)))))
+                        |$CategoryFrame|))))
+(MAKEPROP '|AxiomServer| 'NILADIC T)
+(|AxiomServer|)
+|package|
+(((|AxiomServer|)
+  (CATEGORY |package| (SIGNATURE |axServer| ((|Void|) (|Integer|)))))
+ (T |AxiomServer|))
+(CATEGORY |package| (SIGNATURE |axServer| ((|Void|) (|Integer|))))
+"/apps/Jyperdoc/jyperdoc.svn/trunk/axserver/axserver.spad"
+((|axServer| (*1 *2 *3)
+     (AND (|isDomain| *3 (|Integer|)) (|isDomain| *2 (|Void|))
+          (|isDomain| *1 (|AxiomServer|)))))
+((|axServer| (((|Void|) (|Integer|)) 11)))
+((|AXSERV;axServer;IV;1| ((|Void|) (|Integer|))))
+AXSERV
+(|AxiomServer| (NIL (|axServer| ((9 10) 11))))
+(("slot1Info" 0 2696) ("documentation" 0 NIL) ("ancestors" 0 NIL)
+ ("parents" 0 NIL) ("abbreviation" 0 2689) ("predicates" 0 NIL)
+ ("attributes" 0 NIL) ("signaturesAndLocals" 0 2639)
+ ("superDomain" 0 NIL) ("operationAlist" 0 2596) ("modemaps" 0 2464)
+ ("sourceFile" 0 2405) ("constructorCategory" 0 2338)
+ ("constructorModemap" 0 2230) ("constructorKind" 0 2220)
+ ("constructorForm" 0 2204) ("NILADIC" 0 2167) ("compilerInfo" 0 1538)
+ ("loadTimeStuff" 0 20))
