@@ -1303,7 +1303,7 @@ function drag(elementToDrag, event){
 var appname = "JyperDoc";
 
 function init() {
-	displayTitle("<img src='notebook.gif'/>" + appname);
+	displayTitle(appname);
 	menu();
 }
 

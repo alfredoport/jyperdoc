@@ -1,5 +1,5 @@
 )set mes auto off
 )set out mathml on
-)lisp (load "write.lisp")
+)lisp (load "http.lisp")
 )compile axserver.spad
-axServer(8085)$AXSERV
+axServer(8085, multiServ)$AXSERV
