@@ -82,19 +82,10 @@ AxiomServer: public == private where
        --   headers := concat [headers,char]
        --   WriteLine$Lisp "Char: "char
 
-        counter:Integer := 100000
-        flag:Integer := 0
+        counter:Integer := 10000
         while counter > 0 repeat
 
-          if flag = 0
-           then
-            char := READ_-LINE(s,NIL$Lisp,'EOF)$Lisp
-           else
-            char := STRING(READ_-CHAR_-NO_-HANG(s,NIL$Lisp,'EOF)$Lisp)$Lisp
-
-          if #char = 1
-           then 
-            flag := 1
+          char := STRING(READ_-CHAR_-NO_-HANG(s,NIL$Lisp,'EOF)$Lisp)$Lisp
 
           --WriteLine$Lisp "Char: "char
           if char = "NIL" then
@@ -103,7 +94,7 @@ AxiomServer: public == private where
             counter := 0
           else
             headers := concat [headers,char]
-            counter := 100000
+            counter := 10000
           --WriteLine$Lisp "Header: "headers
 
         StringMatch("([^ ]*)", headers)$Lisp
