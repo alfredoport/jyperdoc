@@ -1,4 +1,4 @@
-* The official web page of the project is hosted at:
+The official web page of the project is hosted at:
   
   http://code.google.com/p/jyperdoc/
 
@@ -19,16 +19,20 @@ USE
 
   svn checkout http://jyperdoc.googlecode.com/svn/trunk jyperdoc
 
-* To use JyperDoc, you need to start axserver first. Start 
-  Axiom/Fricas/OpenAxiom inside the axserver directory and type:
+* To use JyperDoc, you need to start Axiom/Fricas/OpenAxiom first. 
+  The following example uses OpenAxiom to show how to start JyperDoc.
+
+    For Windows, you can download a version of OpenAxiom for this platform at:
+
+    http://open-axiom.org/download.html
 
   cd axserver
-  AXIOMsys
+  open-axiom -nox
   )read jyperdoc.input
 
 Then start your favorite web browser and point it to the following url:
 
   http://localhost:8085/location-of-jyperdoc/jyperdoc.xhtml
 
-where "location-of-jyperdoc" is the full path the jyperdoc directory.
+where "location-of-jyperdoc" is the full path to where jyperdoc was placed.
 
