@@ -1,0 +1,104 @@
+CL-AJAX version 0.1.9 ---------------------------------------------- 2005-04-05
+
+cl-ajax is a library for exporting functions over HTTP, supporting a Web 
+programming style termed "Asynchronous Javascript And XML" (AJAX).  It 
+establishes a package, CL-AJAX, which exports several things. The most 
+interesting are:
+
+(EXPORT-FUNCTION FUN [FUN-NAME]) - export the function FUN. This allows it to 
+be called by URL. Optionally provide a name - otherwise, the SYMBOL-NAME of 
+the function will be associated.
+
+(UNEXPORT-FUNCTION FUN) - FUN can be either a symbol with an associated 
+function, or the name of an exported function. The function is removed from the
+export list.
+
+(DEFEXPORTED NAME PARAMS BODY*) - like DEFUN, but also exports the function, 
+naming it NAME.
+
+(BUILD-PREAMBLE SERVER-URI) - build the Javascript includes to place at the 
+start of an AJAX page. This includes the support functions and generated stubs 
+for exported functions.  At present, these stubs take the form of a Javascript 
+function named
+
+  ajax_<function name>
+
+and have the arguments of the Lisp function with four additions: 
+
+  - callback, the function to call with the return value
+  - expects_xml, which defaults to false
+  - elem_id, which (if present) is returned in the XML response
+  - key_dict, a presently-unused feature for keyword arguments.
+
+Support for keyword arguments are partially underway -- in 
+principle, pass a dictionary as a keyword argument into the Javascript 
+function call.
+
+Optional and rest arguments are implemented by tagging them onto the Javascript
+call; if the function is specified as taking optional or rest arguments, the
+remainder of the argument array is encoded and passed on.
+
+An Araneida handler is provided, AJAX-FUNCTION-HANDLER, which vends 
+functionality over HTTP. Instantiating this and exporting functions allows 
+them to be called remotely.
+
+Data can be provided wrapped in XML or as plain text. Parameters to this 
+service are:
+
+ ajax-fun:   the name of the Lisp function to run. No quotes.  E.g. CAR.
+ ajax-xml:   whether to return XML or plain text. `true' or absent for yes, any 
+             other present value for no.
+             Returned values are in the XHTML namespace!
+ ajax-elem:  the element ID to return in the XML. If no value is provided, the 
+             elem_id element is not returned.  Do not quote this: e.g. `abc123'.
+ ajax-.*:    an arbitrary number of parameters. These are Lisp values as read by
+             the REPL, so strings must be quoted.  Lists etc. may be provided; 
+             don't quote these.
+             E.g. `ajax-1="Foo"&ajax-2=(a b c)&ajax-3=t'.
+ ajax-ext.*: arbitrary additional parameters for optional and rest.
+
+See the included doc/ajax-example.lisp file for a functioning server.
+This provides a sample page (localhost:8000/sample-page/) which does 
+multiplication and and XHTML substitution.
+
+This code has been tested on OpenMCL 0.14.2-p1 CVS ccl-0.14 20050204
+and OpenMCL 0.14.3-dev (2005-03-25).
+Comments and suggestions welcome: rich at holygoat dot co dot uk.
+
+Useful links:
+- mini tutorial on holygoat.co.uk:
+  <http://www.holygoat.co.uk/blog/entry/2005-03-08-4>
+- CLiki page:
+  <http://cliki.net/cl-ajax>
+
+--
+
+Changelog:
+- 2005-03-08: - First release (0.1).
+              - Second release (0.1.1). Minor fixes, functions can now return
+               any return value, such as numbers or lists.
+- 2005-03-14: - 0.1.5.
+               Fixes for compatibility with other Lisps. Tested on SBCL and 
+               OpenMCL on Mac OS 10.3.8; some functionality has also been 
+               checked in LispWorks.
+              - The example has been extended to work with the demo page; be
+               aware that the demo may not work because the browser will refuse
+               to issue an XMLHttpRequest to a different domain. It should work
+               fine when pages are outputted by Araneida. The URL is also hard-
+               coded to localhost:8000/ajax-function/.
+              - There might also be inexplicable difficulties with HTML entity 
+               encoding when saving the generated scripts to a file; I've 
+               stripped them from the Javascript in the example page.
+              - Minor functional improvements have been made, such as more 
+               reasonable argument lists, included Javascript functions for 
+               setting page elements, etc.
+- 2005-03-25: - 0.1.8.
+               Additional fixes, refactoring into a "do" function to reduce
+               code weight, etc. The Javascript callbacks have been improved,
+               and the example now provides useful functionality.
+- 2005-04-05: - 0.1.9
+               Thanks to Bob Bane for supplying a fix for my abysmal JavaScript
+               --- the supplied example functions now work perfectly in Safari
+               and OmniWeb on the Mac.
+
+                                         -Richard Newman, 2005-03-08--2005-04-05

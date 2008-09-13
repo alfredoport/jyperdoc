@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage{noweb}
+
+\begin{document}
+
+\title{axiom-hub.asd}
+\author{Kai Kaminski}
+\maketitle
+
+\section{Code}
+This file contains the ASDF system definition for the Axiom web
+front-end.
+
+<<*>>=
+(defpackage :axiom-hub-system (:use #:asdf #:cl))
+(in-package :axiom-hub-system)
+
+(defsystem axiom-hub
+  :depends-on (araneida cl-ajax cl-who cl-ppcre)
+  :version "0.1"
+  :components ((:file "axiom-com")
+	       (:file "cl-svg")
+	       (:file "axiom-plot" :depends-on ("axiom-com" "cl-svg"))
+	       (:file "defpackage" :depends-on ("axiom-com" "axiom-plot"))
+               (:file "session" :depends-on ("defpackage"))
+	       (:file "axiom-hub" :depends-on ("session"))
+	       (:file "plots" :depends-on ("axiom-hub"))
+	       (:file "toplevel" :depends-on ("axiom-hub" "plots"))
+	       (:file "editor" :depends-on ("axiom-hub"))
+	       (:file "welcome" :depends-on ("axiom-hub"))))
+@ 
+
+\section{License}
+
+<<license>>=
+;;; Copyright (c) 2005, Kai Kaminski. All rights reserved.
+
+;;; Redistribution and use in source and binary forms, with or without
+;;; modification, are permitted provided that the following conditions
+;;; are met:
+
+;;;   * Redistributions of source code must retain the above copyright
+;;;     notice, this list of conditions and the following disclaimer.
+
+;;;   * Redistributions in binary form must reproduce the above
+;;;     copyright notice, this list of conditions and the following
+;;;     disclaimer in the documentation and/or other materials
+;;;     provided with the distribution.
+
+;;; THIS SOFTWARE IS PROVIDED BY THE AUTHOR 'AS IS' AND ANY EXPRESSED
+;;; OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+;;; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;;; ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+;;; DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+;;; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+;;; GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+;;; WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@ 
+\end{document}

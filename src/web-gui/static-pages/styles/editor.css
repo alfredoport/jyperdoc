@@ -1,0 +1,27 @@
+body {
+  background-color:#ffffcc;
+  width:20cm; margin-left:3cm;
+  margin-right:3cm;
+}
+
+#axDocument {
+  text-align:center;
+  border-style:solid;
+  border-color:black;
+}
+
+#axEmptyDocument {
+  margin-left:35%
+  width:30%;
+  background-color:lightblue;
+  text-align:center;
+  font-size:14pt;
+  padding:4mm;
+}
+
+
+.axiomInput { display:block; padding:3mm; background-color:lightgreen; font-size:12pt;}
+.axiomType { display:block; width:100%; text-align:right; font-size:12pt; color:blue; }
+
+#inputContainer { width: 100%; border-style:dashed; border-width:1px; background-color:lightgreen; display:block; }
+#input { width:18cm; border-style:none; background-color:lightgreen; }

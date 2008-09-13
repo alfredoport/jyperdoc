@@ -1,0 +1,78 @@
+INTRODUCTION AND LICENSE INFORMATION
+
+This branch currently only contains the code for the Axiom web
+front-end, which was developed during the Google Summer of Code
+2005. The original proposal for this project ("AxiomUI") can be found
+in src/web-gui/PROPOSAL.
+
+While this branch does not contain Axiom itself, the directory
+structure is compatible with the axiom--main--1 branch, to make merging
+easier. It is not necessary to have the Axiom source code to use this
+software, though.
+
+This program makes use of quite a few open source libraries and
+tools. They can be found in src/lisplib and
+src/web-gui/static-pages/javascript/jsMath. They come with their own
+licenses and are only included for convenience and stability. No
+modifications have been made to any of them.
+
+License information for this software can be found in the individual
+source files and src/web-gui/LICENSE. The former override the latter,
+if they disagree.
+
+
+INSTALLATION AND USE
+
+To use this software you need recent versions of Axiom (at least 3.4)
+and Clisp (at least 2.33.2, www.clisp.org). You also need noweb, which
+is included in the Axiom distribution. It is also available at
+http://www.eecs.harvard.edu/~nr/noweb/. To compile and actually use
+it, make sure that AXIOMsys is in your PATH, go to the src/web-gui
+directory and type
+
+notangle -t8 Makefile.pamphlet > Makefile
+make all
+
+This will create a Clisp image as well as the documenation for all the
+source files. Then enter
+
+sh run-axiom-ui.sh
+
+Start your browser and connect to http://127.0.0.1:5050/ (localhost
+does NOT work currently!).
+
+To see what is possible try the examples in src/web-gui/EXAMPLES.
+
+
+TROUBLESHOOTING
+
+If things don't work, please send a mail to axiom-developer@nongnu.org
+or kai.kaminski@gmail.com or use the issue tracker at
+axiom-developer.org.
+
+Common problems:
+
+1. Command foo doesn't work, there is no output at all!
+
+   Currently error, compiler and autoload messages are not
+   displayed. Many commands don't work yet. For example, it is
+   impossible to change a plot after you have drawn it.
+
+2. Mathematical expressions aren't rendered correctly!
+
+   This is a problem with the jsMath package and some browser, we are
+   working on this. Recent versions of Firefox give reasonable
+   results.
+
+3. Plots don't show up!
+
+   Your browser has to support SVG. Browsers known to support SVG are
+   Firefox, Safari, IE. Konqueror does not support SVG in the latest
+   stable version at this time (3.4).
+
+
+NOTE TO WINDOWS USERS
+
+This software should run on Windows without major
+changes. Unfortunately I don't have access to Windows systems and so I
+can't provide installation instructions.

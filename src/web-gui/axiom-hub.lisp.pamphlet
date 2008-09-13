@@ -1,0 +1,109 @@
+\documentclass{article}
+\usepackage{noweb}
+
+\begin{document}
+
+\title{axiom-hub.lisp}
+\author{Kai Kaminski}
+\maketitle
+
+The code in this file creates an Araneida listener as well as Araneida
+handlers for static files and CL-AJAX. For further information
+refer to the documentation of Arneida and CL-AJAX.
+
+Since this file is central to the Axiom web front-end it seems right
+to include a few general notes about this program.
+
+For each page (Welcome, Toplevel, Editor) of the web front-end there
+is a corresponding Lisp file, that generates the page content
+dynamically. Currently these files are {\tt TOPLEVEL.LISP.PAMPHLET},
+{\tt WELCOME.LISP.PAMPHLET} and {\tt EDITOR.LISP.PAMPHLET}. For the
+HTML generation the Lisp package CL-WHO from Edi Weitz is used.
+
+The code that keeps track of and delivers plots to the browser can be
+found in {\tt PLOTS.LISP.PAMPHLET}. It depends on {\tt
+  AXIOM-PLOT.LISP.PAMPHLET}, which is responsible for creating SVG
+plots from the plot data sent by AXIOMsys. The plotting code also
+depends on {\tt UIDRAW.SPAD.PAMPHLET}, which is a modified copy of
+{\tt DRAW.SPAD} from the Axiom distribution. The modified {\tt DRAW}
+functions dump all kinds of plot information to the standard output,
+e.g. plot title, list of points.
+
+Finally the code that does the session handling, i.e. makes sure that
+every request goes to the correct Axiom frame, is in {\tt
+  SESSION.LISP.PAMPHLET}.
+
+<<*>>=
+(in-package :axiom-hub)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf (html-mode) :sgml))
+
+(defparameter *axiom-url*
+  (araneida::parse-urlstring
+   "http://127.0.0.1:5050")
+  "The URL where Araneida accepts connections. Be aware that localhost
+and 127.0.0.1 are NOT the same. In your browser you have to write
+exactly what you write here. This is considered a bug.")
+
+(defparameter *static-pages-path*
+  (concatenate 'string (namestring (ext:cd)) "static-pages/")
+  "The path where looks for static files.")
+
+(defparameter *listener*
+  (make-instance 'araneida::serve-event-http-listener
+                 :port (araneida::url-port *axiom-url*)))
+
+(install-handler (http-listener-handler *listener*)
+		 (make-instance 'ajax-function-handler)
+		 (urlstring (merge-url *axiom-url* "/ajax-function/")) nil)
+
+(defclass static-handler (handler) ())
+
+(install-handler (http-listener-handler *listener*)
+		 (make-instance 'static-file-handler :pathname *static-pages-path*)
+		 (urlstring (merge-url *axiom-url* "/static/")) nil)
+
+(defun start-axiom-ui ()
+  (handler-case
+      (progn
+	(setf *axiom-connection* (create-instance))
+	(start-listening *listener*)
+	(format t "~%~%Please start your favourite browser and load http://127.0.0.1:5050/~%~%Press Ctrl-C to quit.~%~%")
+	(host-serve-events))
+    (t (c)
+      (print "Bye")
+      (cl-user::quit))))
+@
+
+
+\section{License}
+
+<<license>>=
+Copyright (c) 2005, Kai Kaminski
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+\end{document}
