@@ -1,0 +1,227 @@
+\documentclass{article}
+\usepackage{noweb}
+\begin{document}
+
+\title{axiom-com.lisp}
+\author{Kai Kaminski}
+\maketitle
+
+
+\section{Code}
+
+This file defines the package {\tt AXIOM-COM} with nickname {\tt
+  AXCOM}. It contains code to start and communicate with a running
+instance of AXIOMsys.
+
+
+\subsubsection{Creation and Deletion}
+The function {\tt CREATE-INSTANCE} starts an AXIOMsys instance and
+calls {\tt SETUP-AXIOM-INSTANCE}. The parameter {\tt
+  LOAD-PLOT-LIBRARY} determines wether the {\tt UIDRAW} library should
+be loaded or not.
+
+<<CreationDeletion>>=
+(defun create-instance (&key (load-plot-library t))
+  "Starts $AXIOM/bin/AXIOMsys and redirects its standard io. Assumes that AXIOMsys is in PATH."
+  #+clisp(let ((instance (ext:make-pipe-io-stream "AXIOMsys")))
+	   (setup-axiom-instance instance :load-plot-library load-plot-library)
+	   instance)
+  #+sbcl(let* ((process (sb-ext:run-program "AXIOMsys" nil :search t :wait nil :input :stream :output :stream))
+	       (input (sb-ext:process-output process))
+	       (output (sb-ext:process-input process))
+	       (instance (make-two-way-stream input output)))
+	  (setup-axiom-instance instance :load-plot-library load-plot-library)
+	  instance))
+
+(defun delete-instance (instance)
+  (close (two-way-stream-input-stream instance))
+  (close (two-way-stream-output-stream instance))
+  (close instance))
+
+@
+
+\subsubsection{Setup}
+This function sets up a running AXIOMsys instance. Currently it
+switches all autoload message and the algebra output off and enables
+the tex output. It also makes sure that all functions are compiled,
+because otherwise Axiom crashes on certain inputs (see bug \#196).
+
+If {\tt LOAD-PLOT-LIBRARY} is true, then it also loads the {\tt
+UIDRAW} library and sets {\tt *PRINT-ARRAY*} to {\tt T}, because
+otherwise the output of {\tt DRAW} is useless.
+
+<<setup>>=
+;; Sets up an Axiom instance
+;; ')set functions compile on' is set, because otherwise Axiom crashes
+;; on certain inputs (see bug #196).
+(defun setup-axiom-instance (instance &key (load-plot-library t))
+  "Initializes the Axiom instance so that autoload messages are
+disabled, tex output enabled etc."
+  (send instance
+	      ")set messages autoload off
+)set output tex on
+)set output algebra off
+)set functions compile on
+")
+  (loop repeat 5
+	do
+	(read-response instance))
+  (when load-plot-library
+    (send instance ")library DRAWCFUN
+)library DRAWCURV
+)lisp (setf *print-array* t)
+")
+  (loop repeat 3
+	do
+	(read-response instance))))
+
+@
+
+
+\subsubsection{Read}
+This function reads the output of a running AXIOMsys instance until
+the next prompt.
+ 
+<<read>>=
+(defun read-response (stream)
+  "Reads all Axiom output up to the next prompt, detected by the
+regexp '^([0-9]+) ->'."
+  (let ((response (make-array 0 :adjustable t :fill-pointer t
+			      :element-type 'character)))
+      (loop for char = (read-char stream nil nil)
+	    until (scan "(?m)^\\([0-9]+\\) ->" response)
+	    do
+	    (if char
+		(progn
+		  (force-output *standard-output*)
+		  (vector-push-extend char response))
+		(error "Connection closed by AXIOMsys")))
+      response))
+
+@
+
+\subsubsection{Send}
+
+<<send>>=
+(defun clear (instance)
+  (send instance ")clear all
+")
+  (read-response instance))
+
+(defun send (instance string)
+  (write-string string instance))
+
+@
+
+
+\subsubsection{Parse}
+These functions extract the tex result, the plot data and other
+information from the return value of {\tt READ-RESPONSE}.
+
+<<parse>>=
+(defun find-tex-response (response)
+  "Extracts tex output from response and substitutes certain tex
+commands so that jsMath can render the resulting output correctly."
+  (let* ((tex (cl-ppcre:scan-to-strings "(?s)(?<=\\$\\$).*?(?=\\\\leqno)"
+					response)))
+    (mapcar (lambda (substitution)
+	      (setf tex (cl-ppcre:regex-replace-all
+			 (car substitution) tex (cadr substitution))))
+	    '((" *\\\\sp *" "^")))
+    (or tex "")))
+
+(defun find-plot-data (response)
+  (let* ((plot-data (cl-ppcre:scan-to-strings "(?s)(?<=PLOTDATABEGIN).*?(?=PLOTDATAEND)" response))
+	 (plot-data (cl-ppcre:regex-replace-all "#" plot-data " ")))
+    (when plot-data
+      (read-from-string plot-data))))
+
+(defun parse-response (response)
+  "Extracts the tex output, the step number and the type signature
+from Axiom's response."
+  (let* ((tex-result (find-tex-response response))
+	 (type (cl-ppcre:scan-to-strings "(?m)(?<=Type: ).*$"
+					 response))
+	 (plot (find-plot-data response)))
+    (list
+     :response (scan-to-strings "(?s).*(?=\\([0-9]+\\) ->)" response)
+     :type type
+     :tex tex-result
+     :plot plot)))
+
+@
+
+\subsubsection{Eval}
+The function {\tt EVALUATE} is the high-level interface to this
+package. It escapes the user's command using {\tt ESCAPE-STRING},
+sends it to the AXIOMsys instance {\tt INSTANCE} and returns the
+result using {\tt PARSE-RESPONSE}.
+
+<<eval>>=
+(defun escape-string (string)
+  (regex-replace-all "(?s)_\\s*$"
+		     (regex-replace-all "(\\n)" string "_\\1")
+		     ""))
+
+(defun evaluate (instance command)
+  "Evaluates COMMAND for INSTANCE using |parseAndInterpret|. Hence no
+system commands are allowed (i.e. commands starting with ')'.)"
+  (send instance (format nil "~A~%" (escape-string command)))
+  (parse-response (read-response instance)))
+@
+
+<<*>>=
+(defpackage :axiom-com
+  (:nicknames "AXCOM")
+  (:use :cl :cl-ppcre)
+  (:export "CREATE-INSTANCE"
+	   "DELETE-INSTANCE"
+	   "EVALUATE"
+	   "SEND"
+	   "READ-RESPONSE"
+	   "PARSE-RESPONSE"
+	   "CLEAR"))
+
+(in-package :axiom-com)
+
+<<CreationDeletion>>
+<<setup>>
+<<read>>
+<<send>>
+<<parse>>
+<<eval>>
+
+
+@ 
+
+\section{License}
+
+<<license>>=
+Copyright (c) 2005, Kai Kaminski
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+
+\end{document}

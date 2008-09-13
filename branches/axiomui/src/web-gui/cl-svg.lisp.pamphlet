@@ -1,0 +1,218 @@
+\documentclass{article}
+\usepackage{noweb}
+
+\begin{document}
+
+\title{cl-svg.lisp}
+\author{Kai Kaminski}
+\maketitle
+
+This file will be made into a stand-alone library and put into the
+{\tt LISPLIB} directory.
+
+<<*>>=
+(defpackage :cl-svg
+  (:nicknames :svg)
+  (:use :cl)
+  (:export #:with-svg-output #:text))
+
+(in-package :cl-svg)
+
+(defparameter *svg-header*
+  "<?xml version=\"1.0\" standalone=\"no\"?>
+   <!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" 
+   \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">")
+
+(defparameter *stream* nil "The output stream. Bound by WITH-SVG-OUTPUT.")
+
+;; Unfortunately SVG has attribute names using camel case,
+;; e.g. viewBox, and attributes using hyphens,
+;; e.g. stroke-width. To be able to use 'lispy' attribute names we
+;; have to build a translation table.
+
+(eval-when (:load-toplevel :compile-toplevel :execute)
+  (defvar *attribute-translations* (make-hash-table))
+
+  (defun define-translation (attribute translation)
+    (setf (gethash attribute *attribute-translations*)
+	  translation))
+  (defun translate-attribute (attribute)
+    (or (gethash attribute *attribute-translations*)
+	(string-downcase (symbol-name attribute)))))
+
+(define-translation :viewbox "viewBox")
+(define-translation :preserve-aspect-ratio "preserveAspectRation")
+
+
+
+(defun format-attribute-value (value)
+  "Returns a representation of VALUE, which is suitable for SVG."
+  (cond
+    ((and (consp value) (not (consp (cdr value)))) ;; just a cons
+     (format nil " ~A,~A " (car value) (cdr value)))
+    ((listp value)
+     (format nil " ~{~A~} " (mapcar #'format-attribute-value value)))
+    ((numberp value)
+     (format nil " ~A " (coerce value 'single-float)))
+    (t (format nil " ~A " value))))
+
+(defun attribute-list (stream attributes)
+  (do () ((null attributes))
+    (let ((attribute (translate-attribute (car attributes))))
+      (format stream " ~A" attribute)
+      (setf attributes (cdr attributes))
+      (if (or (null attributes) (keywordp (car attributes)))
+	  (format stream "=\"~A\"" attribute)
+	  (let* ((value (car attributes))
+		 (text (format-attribute-value value))
+		 (length (length text)))
+	    (format stream "=\"~A\"" (subseq text 1 (1- length)))
+	    (setf attributes (cdr attributes)))))))
+
+(defun empty-tag (stream tag attributes)
+  "Prints an empty tag, i.e. a tag of the form <tag attr1='val1' ...
+ attrN='valN' /> to STREAM"
+  (format stream "<~(~A~) " tag)
+  (attribute-list stream attributes)
+  (format stream " />~%"))
+
+(defun open-tag (stream tag &rest attributes)
+  "Writes the opening tag <tag attr1='val1' ... attrN='valN'> to STREAM"
+  (format stream "<~(~A~)" tag)
+  (attribute-list stream attributes)
+  (format stream ">~%"))
+
+(defun close-tag (stream tag)
+  "Writes the closing tag </tag> to STREAM"
+  (format stream "</~(~A~)>~%" tag))
+
+
+(defmacro with-svg-output ((stream &rest attributes) &body body)
+  "Writes an XML declaration, an SVG header and a DOCTYPE declaration
+  to STREAM and wraps body in an <svg>, </svg> pair. To create an
+  <svg> tag without writing the headers, use WITH-SVG."
+  `(progn
+     (format ,stream "~A~%" *svg-header*)
+     (open-tag ,stream :svg ,@attributes :xmlns "http://www.w3.org/2000/svg")
+     (let ((cl-svg::*stream* ,stream))
+       ,@body)
+     (close-tag ,stream :svg)))
+
+(defmacro define-primitive (name)
+  "Defines a simple tag, i.e. a tag with no content like <line ... />."
+  (export name)
+  `(defun ,name (&rest attributes)
+     (empty-tag *stream* ',name attributes)))
+
+(defmacro define-container (name &key include-attributes)
+  "Defines a tag with content, like <text ...>Some
+  text</text>. INCLUDE-ATTRIBUTS is an attribute list, which is always
+ used, regardless of which attributes the user specifies."
+  (export name)
+  `(defmacro
+       ,name
+       ((&rest attributes) &body body)
+     `(progn
+	(open-tag *stream* ',',name ,@attributes ,,@include-attributes)
+	,@body
+	(close-tag *stream* ',',name))))
+
+(defmacro with-cdata (&body body)
+  "All output to *STREAM* within BODY ends up in a CDATA section."
+  `(progn
+     (write-string "<![CDATA[" *stream*)
+     ,@body
+     (write-string "]]>" *stream*)))
+
+(defun write-cdata (string)
+  (with-cdata
+      (write-string string)))
+
+(defmacro text ((&rest attributes) &body body)
+  "Loosely based on CL-WHO behaviour, i.e. strings are written out
+  verbatim, (str something) translates to (princ something *stream*)
+  and (fmt format-string something) translates to (format *stream*
+  format-string something)."
+  `(progn
+     (funcall #'open-tag *stream* :text ,@attributes)
+     ,@(loop for form in body
+	  with transformed-code = nil
+	  with string-output = nil
+	  do
+	    (cond
+	      ((stringp form)
+	       (setf string-output
+		     (concatenate 'string string-output form)))
+	      ((and (listp form) (string= "STR" (symbol-name (car form))))
+	       (push `(progn
+			,(when string-output
+			       `(write-string ,string-output
+					      *stream*))
+			(princ ,(cadr form) *stream*))
+		     transformed-code)
+	       (setf string-output nil))
+	      ((and (listp form) (string= "FMT" (symbol-name (car form))))
+	       (push `(progn
+			,(when string-output
+			       `(write-string ,string-output *stream*))
+			(funcall #'format *stream* ,@(cdr form)))
+		     transformed-code)
+	       (setf string-output nil))
+	      (t (push `(progn
+			  ,(when string-output
+				 `(write-string ,string-output *stream*))
+			  ,form)
+		       transformed-code)
+		 (setf string-output nil)))
+	  finally
+	    (if string-output
+		(return (reverse
+			 (cons `(write-string
+				 ,string-output
+				 *stream*)
+			       transformed-code)))
+	 (return (reverse transformed-code))))
+  (close-tag *stream* :text)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (define-container svg)
+  (define-container g)
+  
+;;; Basic Shapes
+  (define-primitive line)
+  (define-primitive rect)
+  (define-primitive circle)
+  (define-primitive polyline)
+  (define-primitive polygon)
+  (define-primitive ellipse)
+  
+  (define-primitive path))
+@
+<<license>>=
+;;; Copyright (c) 2005, Kai Kaminski. All rights reserved.
+
+;;; Redistribution and use in source and binary forms, with or without
+;;; modification, are permitted provided that the following conditions
+;;; are met:
+
+;;;   * Redistributions of source code must retain the above copyright
+;;;     notice, this list of conditions and the following disclaimer.
+
+;;;   * Redistributions in binary form must reproduce the above
+;;;     copyright notice, this list of conditions and the following
+;;;     disclaimer in the documentation and/or other materials
+;;;     provided with the distribution.
+
+;;; THIS SOFTWARE IS PROVIDED BY THE AUTHOR 'AS IS' AND ANY EXPRESSED
+;;; OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+;;; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;;; ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+;;; DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+;;; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+;;; GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+;;; WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@ 
+\end{document}

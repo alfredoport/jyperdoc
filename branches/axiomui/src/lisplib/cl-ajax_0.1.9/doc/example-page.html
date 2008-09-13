@@ -1,0 +1,91 @@
+<html>
+<head><title>Multiplication Example</title>
+<script type="text/javascript">var clajax_debug = false;
+function debug_alert(text) {
+  if (clajax_debug)
+    alert("CLAJAX: " + text);
+}
+function init_request() {
+  debug_alert("Initialising request...");
+  var r;
+  if (window.XMLHttpRequest) { r = new XMLHttpRequest(); }
+  else {
+    try { r = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) {
+      try { r = new ActiveXObject("Microsoft.XMLHTTP"); } catch (ee) {
+        r = null;
+      }}}
+  if (!r) debug_alert("Browser couldn't make a connection object.");
+  return r;
+}
+function set_element_to_result(elem_id, result, replacing) {
+  // Find the element we want to replace.
+  elem = document.getElementById(elem_id);
+  // Import the remote node.
+  resdiv = result.getElementsByTagName('div')[0];
+  impo = document.importNode(resdiv, true);
+  // And slot it into the DOM, giving it the correct ID if replacing is true
+  // (so we can do it again if necessary).
+  elem.parentNode.replaceChild(impo, elem);
+  if ((undefined != replacing) && replacing)
+    impo.setAttribute('id', elem_id);
+  // Appending instead of replacing:
+  // elem.parentNode.appendChild(impo);
+  // What to do if it's just a string value:
+  // elem.value = result;
+}
+function set_element_from_response(res) {
+  // Take an XML response and wire it into the page.
+  doc_el = res.documentElement;
+  e_id = doc_el.getElementsByTagName('elem_id')[0].firstChild.data;
+  res_el = doc_el.getElementsByTagName('result')[0];
+  set_element_to_result(e_id, res_el);
+}function ajax_multiply(callback, expects_xml, elem_id, key_dict, p_x, p_y) {
+  var url = "http://localhost:8000/ajax-function/?ajax-fun=MULTIPLY" + "&ajax-1=" + encodeURIComponent(p_x) + "&ajax-2=" + encodeURIComponent(p_y) ;         // rest of URL building in JS
+  var start_ext = 6;
+  var end_ext = arguments.length;
+  var i;
+  for (i = start_ext; i < end_ext; ++i)
+	  url = url + "&ajax-ext" + (i - start_ext) + "=" + encodeURIComponent(arguments[i]);
+  if (expects_xml == true) 
+    url = url + "&ajax-xml=true";
+  else 
+    url = url + "&ajax-xml=false";
+  if (null != elem_id)
+    url = url + "&ajax-elem=" + elem_id;
+  var re = init_request();
+  re.open("GET", url, true);
+  re.onreadystatechange = function() {
+    if (re.readyState != 4) return;
+    response = re.responseXML;
+    if (!response) 
+      response = re.responseText;
+      callback(response);
+    }
+    re.send(null);
+    delete re;
+}
+function do_the_math() {
+	ajax_multiply(set_element_to_result, true, 'z', null, 
+			document.getElementById('x').value,
+			document.getElementById('y').value);
+}</script>
+  </head>
+  <body>
+	  <h2>Hey! This page is sorta deprecated.</h2>
+	  <p>Try <a href="http://localhost:8000/sample-page/">the sample page</a>.</p>
+    <input type="text"
+              id="x" 
+              value="2" size="3">
+    *
+    <input type="text"
+              id="y"
+              value="3" size="3">
+    =
+    <input type="text"
+              id="z"
+              value="" size="3">
+    <input type="button" name="check"
+              value="Calculate"
+      onclick="do_the_math(); return false;">
+  </body>
+</html>

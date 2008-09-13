@@ -1,0 +1,141 @@
+\documentclass{article}
+\usepackage{noweb}
+
+\begin{document}
+
+\title{toplevel.lisp}
+\author{Kai Kaminski}
+\maketitle
+
+
+\section{Code}
+
+This file installs an Araneida handler, which delivers an Axiom
+toplevel page to the browser at {\tt /toplevel/} relative to the base
+URL (see {\tt AXIOM-HUB.LISP.PAMPHLET}).
+
+
+\subsubsection{handler}
+The usual Araneida handler setup.
+<<handler>>=
+(defclass toplevel-handler (handler) ())
+
+(defmethod handle-request-response ((handler toplevel-handler)
+				    method request)
+  (declare (ignore method))
+  (let ((session (create-session)))
+    (request-send-headers request
+			  :content-type "text/html")
+    (toplevel-page (request-stream request) (session-id session) (session-title session))
+    (finish-output (request-stream request))
+    t))
+
+(install-handler (http-listener-handler *listener*)
+		 (make-instance 'toplevel-handler)
+		 (urlstring (merge-url *axiom-url* "/toplevel/")) nil)
+
+@
+
+
+\subsubsection{ToplevelEval}
+This function is made available to the browser side through CL-AJAX,
+since it is defined using {\tt DEFEXPORT}. It takes the user input and
+a session ID, evaluates the input and sends the result back to the
+browser.
+<<toplevelEval>>=
+(defexported toplevel-eval (command session-id)
+  "Evaluates COMMAND for the session with id SESSION-ID."
+  (let* ((session (get-session-by-id session-id))
+	 (response (session-eval session command))
+	 (type (getf response :type))
+	 (tex (getf response :tex))
+	 (plot (getf response :plot)))
+    (with-output-to-string (s)
+      (format s "<result>")
+      (when plot
+	(destructuring-bind (url width height)
+	    (make-plot plot)
+	  (funcall #'format s "<plot width='~A' height='~A' src='~A' />" width height url)))
+      (when tex
+	(format s "<tex>~A</tex>" tex))
+      (format t "Type: ~A~%~%" type)
+      (when type
+	(format s "<type>~A</type>" type))
+      (format s "</result>"))))
+
+@
+
+
+\subsubsection{ToplevelPage}
+This function writes a Toplevel page with the given session ID and title to {\tt STREAM}. The new session is created in {\tt HANDLE-REQUEST-RESPONSE} using {\tt CREATE-SESSION}, which returns the session ID.
+<<toplevelPage>>=
+(defun toplevel-page (stream session-id session-title)
+  "Generates a toplevel HTML page including the given SESSION-ID and
+SESSION-TITLE. The generated page contains links to toplevel.js,
+jsMath/* and toplevel.css."
+  (with-html-output (stream nil :prologue t :indent t)
+    (:html
+     (:head
+      (:title "Axiom Toplevel - " (str session-title))
+      (:link :rel "stylesheet" :type "text/css" :href "/static/styles/toplevel.css")
+      (str (build-preamble
+	    (urlstring (merge-url *axiom-url* "/ajax-function/"))
+	    (format nil "~%var session_id = ~s;~%" session-id)))
+      (:script :type "text/javascript" :src "/static/javascript/toplevel.js" ""))
+     (:body
+      (:script :src "/static/javascript/jsMath/jsMath.js" :type "text/javascript" "")
+      "To evaluate Axiom code just enter it and hit return. If the output is not displayed correctly click on the jsMath button in the lower right corner. Two dimensional graphs should work, even though not all options and no operations are supported at this time. Sessions are independent of each other but parallel computations are not possible at the moment. You can load this page several times and each instance will have its own frame."
+      (:div :id "output" "")
+      (:form
+       :action "" :onsubmit "axiom_eval();return false;"
+       (:div
+	:id "inputContainer"
+	(:input :type "text" :id "input")
+	(:input :type "submit" :value "Submit" :style "display:none;")))
+      (:div :id "footer" "")
+      (:script :type "text/javascript" "jsMath.Process()")))))
+
+@
+
+<<*>>=
+(in-package :axiom-hub)
+
+<<handler>>
+
+<<toplevelEval>>
+
+<<toplevelPage>>
+@
+
+
+\section{License}
+
+<<license>>=
+Copyright (c) 2005, Kai Kaminski
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+\end{document}
+

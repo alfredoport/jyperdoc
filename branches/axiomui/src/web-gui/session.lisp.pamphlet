@@ -1,0 +1,97 @@
+\documentclass{article}
+\usepackage{noweb}
+
+\begin{document}
+
+\title{session.lisp}
+\author{Kai Kaminski}
+\maketitle
+
+
+\section{Code}
+
+This file contains all code related to session handling. A session is
+currently a handle for an Axiom frame. This ensures that if there are
+several toplevels at once, that they are independent of each other (as
+far as being independent Axiom frames makes them so). It is fairly
+easy to change the code so that for each session a new copy of
+AXIOMsys is started. This would allow parallel computations. New
+versions of Clisp support threads, so this might be interesting soon.
+
+<<*>>=
+(in-package :axiom-hub)
+
+(defparameter *axiom-connection* nil)
+(defparameter *sessions* nil "A list of the currently active sessions.")
+
+(let ((session-counter 0))
+  (defun gen-session-id ()
+    "Generates a unique positive integer to be used as a session id."
+    (incf session-counter)))
+
+(defclass session ()
+  ((id :initarg :id :reader session-id)
+   (title :initarg :title :accessor session-title)
+   (axiom-instance :initarg :axiom-instance :accessor session-axiom-instance)))
+
+(defun create-session ()
+  "Creates an instance of SESSION and adds it to *SESSIONS*"
+  (unless *axiom-connection*
+    (setf *axiom-connection* (create-instance)))
+  (let* ((id (gen-session-id))
+	 (title (format nil "Session ~A" id))
+         (axiom-instance *axiom-connection*)
+	 (session (make-instance 'session
+				 :id id
+				 :title title
+				 :axiom-instance axiom-instance)))
+    ;; This code establishes a new frame for this session.
+    (axcom:send axiom-instance (format nil ")lisp (|addNewInterpreterFrame| '|session-~A|)~%" id))
+    (axcom:read-response axiom-instance)
+
+    (push session *sessions*)
+    session))
+
+(defun session-eval (session command)
+  "Evaluates COMMAND in the frame associated with SESSION."
+  (let ((instance (session-axiom-instance session))
+	(frame (format nil "session-~A" (session-id session))))
+    (axcom:send *axiom-connection* (format nil ")lisp (|changeToNamedInterpreterFrame| '|~A|)~%" frame))
+    (axcom:read-response instance)
+    (axcom:evaluate instance command)))
+
+(defun get-session-by-id (session-id)
+  (find session-id *sessions* :test #'eql :key #'session-id))
+@
+
+
+\section{License}
+
+<<license>>=
+Copyright (c) 2005, Kai Kaminski
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+\end{document}

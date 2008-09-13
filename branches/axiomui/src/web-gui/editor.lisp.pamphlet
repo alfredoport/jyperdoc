@@ -1,0 +1,70 @@
+\documentclass{article}
+\usepackage{noweb}
+\begin{document}
+\title{editor.lisp}
+\author{Kai Kaminski}
+\maketitle
+
+
+\section{Code}
+
+This file is a placeholder for the Editor page.
+<<*>>=
+(in-package :axiom-hub)
+
+(defclass editor-handler (handler) ())
+
+(defmethod handle-request-response ((handler editor-handler) method request)
+  (declare (ignore method))
+  (request-send-headers request)
+
+  (editor-page (request-stream request)))
+
+(defun editor-page (stream)
+  (with-html-output (stream nil :prologue t :indent t)
+    (:html
+     (:head
+      (:title "Editor")
+      (:link :rel "stylesheet" :type "text/css" :href "/static/styles/editor.css")
+      (:script :type "text/javascript" :src "/static/javascript/editor.js"))
+     (:body
+      (:h1 "Welcome to the editor!")
+      (:div
+       :id "axDocument"
+       (:div :id "axEmptyDocument"
+	     "Empty document. To add something to your document click this box. (Doesn't actually work at the moment.)"))))))
+
+(install-handler (http-listener-handler *listener*)
+		 (make-instance 'editor-handler)
+		 (urlstring (merge-url *axiom-url* "/editor/")) nil)
+@ 
+
+\section{License}
+<<license>>=
+;;; Copyright (c) 2005, Kai Kaminski. All rights reserved.
+
+;;; Redistribution and use in source and binary forms, with or without
+;;; modification, are permitted provided that the following conditions
+;;; are met:
+
+;;;   * Redistributions of source code must retain the above copyright
+;;;     notice, this list of conditions and the following disclaimer.
+
+;;;   * Redistributions in binary form must reproduce the above
+;;;     copyright notice, this list of conditions and the following
+;;;     disclaimer in the documentation and/or other materials
+;;;     provided with the distribution.
+
+;;; THIS SOFTWARE IS PROVIDED BY THE AUTHOR 'AS IS' AND ANY EXPRESSED
+;;; OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+;;; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;;; ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+;;; DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+;;; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+;;; GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+;;; WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@ 
+\end{document}

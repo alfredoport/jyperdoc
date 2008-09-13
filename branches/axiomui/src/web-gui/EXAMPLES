@@ -1,0 +1,28 @@
+The following examples should work with the current version of the
+Axiom web front-end.
+
+Example 1, Simple arithmetic:
+
+3+4*55-9
+
+
+
+Example 2, Integration:
+
+integrate(cos(x),x)
+
+integrate((sin(x)-x)/(1-x),x)
+
+The result of the latter is not rendered correctly in Firefox (Deer
+Park 2, Linux), but it is rendered correctly in Safari.
+
+
+Example 3, Plots:
+
+draw(sin, -%pi..%pi)
+
+draw(2*sin(x^2), x=-%pi..%pi, unit == [1,0.5])
+
+draw(curve(cos(5*t),t), t=0..2*%pi, coordinates == polar, title ==
+"Foo")
+
