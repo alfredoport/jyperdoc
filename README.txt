@@ -32,7 +32,7 @@ USE
 
 Then start your favorite web browser and point it to the following url:
 
-  http://localhost:8085/location-of-jyperdoc/jyperdoc.xhtml
+  http://localhost:8085/location-of-jyperdoc/xhtml/jyperdoc.xhtml
 
 where "location-of-jyperdoc" is the full path to where jyperdoc was placed.
 
