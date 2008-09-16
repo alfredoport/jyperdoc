@@ -1,5 +1,8 @@
 /*
- Copyright (c) 2007 Arthur C. Ralfs
+ Copyright (c) 2007 - 2008 Arthur C. Ralfs
+ All rights reserved.
+
+ Copyright (c) 2007 - 2008 Alfredo Portes
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -15,6 +18,10 @@
        distribution.
 
      - The name of Arthur C. Ralfs may not be used to endorse or promote 
+       products derived from this software without specific prior written 
+       permission.
+
+     - The name of Alfredo Portes may not be used to endorse or promote 
        products derived from this software without specific prior written 
        permission.
 
@@ -79,11 +86,17 @@ function redirectToBrowse(value) {
     document.location = 'browse.xhtml?' + value + "," + document.getElementById('searchbox').value;
 }
 
+/*
+ *
+ */
 function asq(domain, key) {
 
     document.location = 'browse.xhtml?' +  "asqxml=" + domain + "," + key;
 }
 
+/*
+ *
+ */
 function remove_extra(targ) {
 
 		targ.value = targ.value.replace('/\n+$/g',"");
@@ -120,6 +133,8 @@ function keyPressed(e) {
   }
 }
 
+/**
+ */
 function linkEvaluate(stepNum) {
 
   makeRequest(document.getElementById(stepNum));
@@ -134,16 +149,25 @@ function putFocus() {
   command.focus();
 }
 
+/*
+ *
+ */
 function activeCell(targ) {
 
   document.getElementById(targ.id).style.border="solid 1px #0000FF";
 }
 
+/*
+ *
+ */
 function passiveCell(targ) {
 
   document.getElementById(targ.id).style.border="solid 1px #CCCCCC";
 }
 
+/*
+ *
+ */
 function onBlur(e) {
 
   var targ = e.target;
@@ -151,6 +175,9 @@ function onBlur(e) {
   passiveCell(targ);
 }
 
+/*
+ *
+ */
 function onFocus(e) {
 
   var targ = e.target;
@@ -169,6 +196,9 @@ function onFocus(e) {
   //document.getElementById(root.lastChild.id).style.display="inline";
 }
 
+/*
+ *
+ */
 function changeFocus(e) {
 
   if (e.target)
@@ -197,6 +227,9 @@ function writeToFile(path,content) {
   + 'close!ifile;');
 }
 
+/*
+ *
+ */
 function readFromEditor() {
 
   // getCode is magic from Codepress.
@@ -207,7 +240,9 @@ function readFromEditor() {
   
 }
 
-
+/*
+ *
+ */
 function compileFromEditor() {
 
   writeToFile('casn.input',area.getCode());
@@ -259,6 +294,9 @@ function makeRequest(targ) {
 
 }
 
+/*
+ *
+ */
 function removeOutput(command) {
 
   var ncommand = command.replace(/^\n+|\n+$/g,"");
@@ -280,10 +318,9 @@ function sendCompCell(compCellString) {
 			}
 		}	
 	}
-	http_request.setRequestHeader('Content-Type', 'text/plain');								    http_request.send("compCellString="+compCellString);
+	http_request.setRequestHeader('Content-Type', 'text/plain');	
+	http_request.send("compCellString="+compCellString);
 }
-
-
 
 /* Here's the structure:
 
@@ -478,6 +515,9 @@ function getStepNum(g) {
     return getStepBox(getResultBox(g)).firstChild.data;
 }
 
+/*
+ *
+ */
 function getCommandBox(resultBox) {
     // make sure argument is of right class
     if (!CSSClass.is(resultBox,'result')) {
@@ -490,6 +530,9 @@ function getCommandBox(resultBox) {
     }
 }
 
+/*
+ *
+ */
 function getAlgebraBox(resultBox) {
     // make sure argument is of right class
     if (!CSSClass.is(resultBox,'result')) {
@@ -502,6 +545,9 @@ function getAlgebraBox(resultBox) {
     }
 }
 
+/*
+ *
+ */
 function getMathmlBox(resultBox) {
     // make sure argument is of right class
     if (!CSSClass.is(resultBox,'result')) {
@@ -514,6 +560,9 @@ function getMathmlBox(resultBox) {
     }
 }
 
+/*
+ *
+ */
 function getTypeBox(resultBox) {
     // make sure argument is of right class
     if (!CSSClass.is(resultBox,'result')) {
@@ -538,6 +587,9 @@ function getFirstCompCell(compCell) {
     return null;
 }
 
+/*
+ *
+ */
 function getSibCompCells(compCell) {
 //    alert('getSibCompCells 1');
     var parent = ctgCompCell(compCell);
@@ -600,7 +652,9 @@ function addCompCell() {
     }
 }
 
-
+/*
+ *
+ */
 function ctgCompCell(targ) {
     // given any node this should return the containing compCell
     if (targ.parentNode.className == 'compCell' || targ.parentNode.className == 'rootCompCell') {
@@ -611,7 +665,9 @@ function ctgCompCell(targ) {
     }
 }
 
-
+/*
+ *
+ */
 function showContext(e) {
     var x = e.clientX;
     var y = e.clientY;
@@ -1001,12 +1057,17 @@ function showCell(compId) {
     }
 }
 
-
+/*
+ *
+ */
 function closeContext(e) {
     var tempBox = e.target.parentNode;
     tempBox.parentNode.removeChild(tempBox);
 }
 
+/*
+ *
+ */
 function getX(e) {
     var x = 0;
     while(e) {
@@ -1016,6 +1077,9 @@ function getX(e) {
     return x;
 }
 
+/*
+ *
+ */
 function getY(e) {
     var y = 0;
     while(e) {
@@ -1105,6 +1169,9 @@ function rotateHead(compCell) {
     }
 }
 
+/*
+ *
+ */
 function makeTextBox() {
     // edit box
     var hidden = false;
@@ -1302,11 +1369,17 @@ function drag(elementToDrag, event){
 
 var appname = "JyperDoc";
 
+/*
+ *
+ */
 function init() {
 	displayTitle("<img src='notebook.gif'/>" + appname);
 	menu();
 }
 
+/*
+ *
+ */
 function displayTitle(title) {
 	
 	var banner = document.getElementById("banner");
@@ -1314,9 +1387,12 @@ function displayTitle(title) {
 			
 }
 
+/*
+ *
+ */
 function menu() {
 	
-	  var menu = document.getElementById("menu");
+  var menu = document.getElementById("menu");
 
 	  var links = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
 		links.setAttribute('id','links');
@@ -1338,13 +1414,23 @@ function menu() {
 		browser.setAttribute('id','browser');
 		browser.setAttribute('onclick',"window.open('man0page.xhtml')");
 		browser.appendChild(document.createTextNode('Browse'));
+
+
+  var abook  = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
+  abook.setAttribute('id','axbook');
+  abook.setAttribute('onclick',"window.open('../axbook/book-contents.xhtml')");
+  abook.appendChild(document.createTextNode('Axiom Book'));
 								
 	  //links.appendChild(interp);
-	  links.appendChild(editor);
+	  //links.appendChild(editor);
 	  //links.appendChild(browser);
+	  links.appendChild(abook);
 	  menu.appendChild(links);	
 }
 
+/*
+ *
+ */
 function markInUse(e) {
 
 	var targ = e.target;
@@ -1352,6 +1438,9 @@ function markInUse(e) {
   //link.style.background-color="#1e90ff";
 }
 
+/*
+ *
+ */
 function interpreter() {
 
   	var contents = document.getElementById("contents");
@@ -1377,6 +1466,9 @@ function interpreter() {
 		contents.appendChild(rootcompcell);
 }
 
+/*
+ *
+ */
 function editor() {
 
 	  var contents = document.getElementById("contents");
@@ -1417,6 +1509,9 @@ function getValues() {
 		makeRequestServer(data[0],data[1]);
 }
 
+/*
+ *
+ */
 function makeRequestServer(command, value) {
 
 	try {
@@ -1452,6 +1547,9 @@ function makeRequestServer(command, value) {
 	http_request.send(command+"="+value);
 }
 
+/*
+ *
+ */
 function handleResponse() {
 	if (http_request.readyState == 4) {
 		if (http_request.status == 200) {
@@ -1493,4 +1591,4 @@ HTTP._factories = [
 			}
 			HTTP._factory();
 	}
-
+	
