@@ -1373,7 +1373,7 @@ var appname = "JyperDoc";
  *
  */
 function init() {
-	displayTitle("<img src='notebook.gif'/>" + appname);
+	displayTitle("<img src='../images/notebook.gif'/>" + appname);
 	menu();
 }
 
