@@ -1,7 +1,15 @@
 package graph.view2D;
 
 
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.geom.Line2D;
+
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 /**
  * 
@@ -14,9 +22,47 @@ import javax.swing.JFrame;
 
 public class Control2D extends JFrame {
 
-	public Control2D(){
+	private JLabel translate;
+	private JLabel graphs;
+	private JLabel scale;
+	private JPanel panel;
+	
+	public Control2D() {
+		
+		this.setLayout(new FlowLayout());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+	
+	
+	public void drawControlPanel() {
+		
+		this.setTitle("2D Control Panel");
+		
+		this.translate = new JLabel("Translate");
+		this.graphs = new JLabel("Graphs");
+		this.scale = new JLabel("Scale");
+		
+		//this.add(this.scale);
+		//this.add(this.graphs);
+		//this.add(this.translate);
+		this.panel = new JPanel();
+		this.panel.setSize(200,70);
+		this.panel.setVisible(true);
+		
+		Button2D[] buttons = new Button2D[37];
+		
+		for (int i = 0; i < buttons.length; i++) {
+			
+			buttons[i] = new Button2D();
+			buttons[i].setVisible(true);
+			this.add(buttons[i]);
+
+		}
 		
 		
+		Button2D.initButtons(buttons);
+		
+
 	}
 	
 	/**
@@ -25,10 +71,18 @@ public class Control2D extends JFrame {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (Exception e) { }
+		
 		Control2D c = new Control2D();
-		c.setTitle("The first Java 2D program");
 		c.setSize(350,80);
 		c.setVisible(true);
+		
+		c.drawControlPanel();
+		
+		
 
 	}
 
