@@ -1,6 +1,6 @@
 package graph.view2D;
 
-public class Graph2D {
+public class Graph {
 
 	/**
 	 * @param args
