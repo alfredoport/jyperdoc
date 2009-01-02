@@ -1,6 +1,5 @@
 package graph.view2D;
 
-
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -29,7 +28,7 @@ public class Control2D extends JFrame {
 	
 	public Control2D() {
 		
-		this.setLayout(new FlowLayout());
+		//this.setLayout(new FlowLayout());
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
@@ -48,20 +47,6 @@ public class Control2D extends JFrame {
 		this.panel = new JPanel();
 		this.panel.setSize(200,70);
 		this.panel.setVisible(true);
-		
-		Button2D[] buttons = new Button2D[37];
-		
-		for (int i = 0; i < buttons.length; i++) {
-			
-			buttons[i] = new Button2D();
-			buttons[i].setVisible(true);
-			this.add(buttons[i]);
-
-		}
-		
-		
-		Button2D.initButtons(buttons);
-		
 
 	}
 	
