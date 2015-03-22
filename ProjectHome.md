@@ -1,0 +1,1 @@
+Jyperdoc is a web browser interface for [OpenAxiom](http://www.open-axiom.org) Computer Algebra Systems that allows to run commands, access online help and tutorial information as well as browsing the algebra database.
